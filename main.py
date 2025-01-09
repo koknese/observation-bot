@@ -4,14 +4,11 @@ from discord.utils import get
 from discord.ext import commands
 from dotenv import load_dotenv
 from typing import Literal
-import asyncio
-from roblox import Client
 import os
 
 intents = discord.Intents.all()
 intents.members = True
 server_id = 1184200388665147484
-robloxAPI = Client()
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
