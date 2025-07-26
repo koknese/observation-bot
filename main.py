@@ -16,7 +16,7 @@ server_id = os.getenv('SERVER_ID')
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
-observation_access = os.getenv('OBS_ROLE')
+observation_access = int(os.getenv('OBS_ROLE'))
 
 @bot.event
 async def on_ready():
