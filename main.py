@@ -9,11 +9,14 @@ import time
 import sqlite3
 from misc.paginator import Pagination
 
+load_dotenv()
 intents = discord.Intents.all()
 intents.members = True
-server_id = 1184200388665147484
+server_id = os.getenv('SERVER_ID')
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
+
+observation_access = os.getenv('OBS_ROLE')
 
 @bot.event
 async def on_ready():
@@ -28,7 +31,7 @@ async def on_ready():
     guild=discord.Object(id=server_id)
 )
 @app_commands.describe(user="User to log an observation for.")
-@discord.app_commands.checks.has_any_role(1398653755519537284)
+@discord.app_commands.checks.has_any_role(observation_access)
 async def observe(interaction: discord.Interaction, user: discord.Member, observation_type: Literal["Positive", "Negative"], description: str, evidence: discord.Attachment):
   
     def determineEmbedColor():
@@ -88,7 +91,7 @@ async def observe(interaction: discord.Interaction, user: discord.Member, observ
     guild=discord.Object(id=server_id)
 )
 @app_commands.describe(user="User to view observations for.")
-@discord.app_commands.checks.has_any_role(1398653755519537284)
+@discord.app_commands.checks.has_any_role(observation_access)
 async def listObs(interaction: discord.Interaction, user: discord.Member):
     try:
         conn = sqlite3.connect('data.db')
@@ -126,7 +129,7 @@ async def listObs(interaction: discord.Interaction, user: discord.Member):
     guild=discord.Object(id=server_id)
 )
 @app_commands.describe(user="User to view an observation for.", obsid="The ID of the observation. Can be found via /list-observations")
-@discord.app_commands.checks.has_any_role(1398653755519537284)
+@discord.app_commands.checks.has_any_role(observation_access)
 async def viewObs(interaction: discord.Interaction, user: discord.Member, obsid: str):
     try:
         embed = discord.Embed(title="Viewing obersvations",
@@ -175,7 +178,7 @@ async def viewObs(interaction: discord.Interaction, user: discord.Member, obsid:
     guild=discord.Object(id=server_id)
 )
 @app_commands.describe(user="User to delete an observation for.", obsid="The ID of the observation. Can be found via /list-observations")
-@discord.app_commands.checks.has_any_role(1398653755519537284)
+@discord.app_commands.checks.has_any_role(observation_access)
 async def deleteObs(interaction: discord.Interaction, user:discord.Member, obsid:str):
         try:
             conn = sqlite3.connect('data.db')
@@ -198,6 +201,5 @@ async def deleteObs(interaction: discord.Interaction, user:discord.Member, obsid
                 embed = discord.Embed(title="SQL: Table not found!", colour=0xc01c28, description="This user might not have any observations at all!")
                 await interaction.response.send_message(embed=embed)
 
-load_dotenv()
 token = os.getenv('TOKEN')
 bot.run(token)
