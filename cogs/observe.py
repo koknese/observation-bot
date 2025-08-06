@@ -22,6 +22,7 @@ fc_secret = os.getenv('API_SECRET')
 fc_api_key = os.getenv('API_KEY')
 fc_app_id = os.getenv('APP_ID')
 observation_access = int(os.getenv('OBS_ROLE'))
+stats_access = int(os.getenv('HA_ROLE'))
 
 timestamp = int(time.time() * 1000)  
 hash_bytes = hmac.new(fc_secret.encode(), (fc_api_key + str(timestamp)).encode(), hashlib.sha1).digest()
@@ -159,13 +160,7 @@ class Observation(commands.Cog):
         description='View the amount of observations made by a specific staff member'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    # DO NOT FORGET TO CHANGE THIS TO HA
-    # DO NOT FORGET TO CHANGE THIS TO HA
-    # DO NOT FORGET TO MAKE HA ROLE ID AN ENV TOO
-    @discord.app_commands.checks.has_any_role(observation_access)
-    # DO NOT FORGET TO MAKE HA ROLE ID AN ENV TOO
-    # DO NOT FORGET TO CHANGE THIS TO HA
-    # DO NOT FORGET TO CHANGE THIS TO HA
+    @discord.app_commands.checks.has_any_role(stats_access)
     async def stats(self, interaction: discord.Interaction, user: discord.Member):
         current_month = datetime.now().month
         current_year = datetime.now().year
