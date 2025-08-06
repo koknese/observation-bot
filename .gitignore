@@ -1,0 +1,4 @@
+data*
+.env
+misc/__pycache__
+cogs/__pycache__
