@@ -160,7 +160,7 @@ class Observation(commands.Cog):
         description='View the amount of observations made by a specific staff member'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @discord.app_commands.checks.has_any_role(stats_access)
+    @discord.app_commands.checks.has_any_role(observation_access)
     async def stats(self, interaction: discord.Interaction, user: discord.Member):
         current_month = datetime.now().month
         current_year = datetime.now().year
@@ -168,25 +168,6 @@ class Observation(commands.Cog):
             class Droptable(discord.ui.View):
                 def __init__(self, *, timeout=40, userid):
                     super().__init__(timeout=timeout)
-                    self.userid = userid
-    
-                @discord.ui.button(label="Drop table (IRREPARABLE)", style=discord.ButtonStyle.danger, emoji="🗑️")
-                async def drop_table(self, interaction: discord.Interaction, view: discord.ui.View):
-                    try:
-                        embed = discord.Embed(title=f"All data has been irreversibly deleted.",
-                            description="# :warning: TABLE FOR <@{self.userid}> DROPPED! \n### This incident will be reported.",
-                            colour=0xe01b24)
-
-                        embed.set_author(name=f"Table dropped by {interaction.user}",
-                        icon_url=interaction.user.avatar)
-
-                        conn = sqlite3.connect('data.db')
-                        c = conn.cursor()
-                        c.execute(f"DROP TABLE {"o" + str(self.userid)}")
-                        pprint.pprint(f"{interaction.user} has dropped table {self.userid}")
-                        await interaction.response.send_message(embed=embed)
-                    except Exception as e:
-                        await interaction.channel.send(e)
 
             shortDateNow = str(current_month) + "." + str(current_year)
             shortDateLastMonth = str(current_month - 1) + "." + str(current_year)
@@ -225,6 +206,30 @@ class Observation(commands.Cog):
                              icon_url=interaction.user.avatar.url)
 
             await interaction.response.send_message(embed=embed, ephemeral=True, view=Droptable(userid=user.id))
+        except Exception as e:
+            await interaction.channel.send(e)
+
+    @app_commands.command(
+        name='drop-obs-table',
+        description='Wipe the observation log for an admin'
+    )
+    @app_commands.guilds(discord.Object(id=server_id))
+    @app_commands.describe(user="!!THIS ACTION IS IRREVERSIBLE!! The admin to get his observation stats wiped.")
+    @discord.app_commands.checks.has_any_role(observation_access)
+    async def drop_table(self, interaction: discord.Interaction, user: discord.Member):
+        try:
+            embed = discord.Embed(title=f"All data has been irreversibly deleted.",
+                description=f"# :warning: TABLE FOR <@{user.id}> DROPPED! \n### This incident will be reported.",
+                colour=0xe01b24)
+
+            embed.set_author(name=f"Table dropped by {interaction.user}",
+            icon_url=interaction.user.avatar)
+
+            conn = sqlite3.connect('data.db')
+            c = conn.cursor()
+            c.execute(f"DROP TABLE {"o" + str(user.id)}")
+            pprint.pprint(f"{interaction.user} has dropped table {user.id}")
+            await interaction.response.send_message(embed=embed)
         except Exception as e:
             await interaction.channel.send(e)
 
