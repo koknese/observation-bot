@@ -215,7 +215,7 @@ class Observation(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     @app_commands.describe(user="!!THIS ACTION IS IRREVERSIBLE!! The admin to get his observation stats wiped.")
-    @discord.app_commands.checks.has_any_role(observation_access)
+    @discord.app_commands.checks.has_any_role(stats_access)
     async def drop_table(self, interaction: discord.Interaction, user: discord.Member):
         try:
             embed = discord.Embed(title=f"All data has been irreversibly deleted.",
