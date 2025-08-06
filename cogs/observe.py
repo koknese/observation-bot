@@ -174,7 +174,7 @@ class Observation(commands.Cog):
                 async def drop_table(self, interaction: discord.Interaction, view: discord.ui.View):
                     try:
                         embed = discord.Embed(title=f"All data has been irreversibly deleted.",
-                            description="#:warning: TABLE FOR <@{self.userid}> DROPPED! \n### This incident will be reported.",
+                            description="# :warning: TABLE FOR <@{self.userid}> DROPPED! \n### This incident will be reported.",
                             colour=0xe01b24)
 
                         embed.set_author(name=f"Table dropped by {interaction.user}",
