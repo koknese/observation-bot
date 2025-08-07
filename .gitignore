@@ -1,0 +1,5 @@
+data*
+.env
+.env.prod
+misc/__pycache__
+cogs/__pycache__
