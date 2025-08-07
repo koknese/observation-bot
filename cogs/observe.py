@@ -1,8 +1,5 @@
-import discord
-import hmac
-import hashlib
-import requests
-import sqlite3
+from misc.rover import robloxToDiscord
+from cogs.modassistance import getUserId
 from discord import app_commands, Embed, ui
 from discord.utils import get
 from discord.ext import commands
@@ -12,6 +9,11 @@ from typing import Literal
 import os
 import time 
 import pprint
+import discord
+import hmac
+import hashlib
+import requests
+import sqlite3
 
 intents = discord.Intents.all()
 intents.members = True
@@ -19,6 +21,7 @@ intents.members = True
 load_dotenv()
 server_id = os.getenv('SERVER_ID')
 fc_secret = os.getenv('API_SECRET')
+rover_token = os.getenv('ROVER_KEY')
 fc_api_key = os.getenv('API_KEY')
 
 mod_id = os.getenv('MOD_ID')
@@ -179,6 +182,13 @@ class Observation(commands.Cog):
                     conn.commit()
                     c.close()
                     conn.close()
+
+                    # dming part
+                    print()
+                    user = interaction.client.get_user(int(robloxToDiscord(rover_token, server_id, getUserId(roblox_username))["discordUsers"][0]["user"]["id"])) # roblox username to discord id
+                    embed.set_author(name=f"You have received a {observation_type.lower()} observation!", icon_url="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.sUVyywAHU0Q2V2hyo_dligAAAA%26pid%3DApi&f=1&ipt=d3f8072407cd9ca31c41b0ab08fa9104c7b3292fdb636a5d6d6e37c0591af2c8&ipo=images")
+                    embed.set_footer(text="For any questions or concerns, go to the staff-meeting channel in Staff Hub.")
+                    await user.send("# ATTENTION!", embed=embed)
                 except Exception as e:
                     await interaction.channel.send(f"An error has occured:\n```{e}```")
     
