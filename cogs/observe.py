@@ -20,7 +20,12 @@ load_dotenv()
 server_id = os.getenv('SERVER_ID')
 fc_secret = os.getenv('API_SECRET')
 fc_api_key = os.getenv('API_KEY')
-fc_app_id = os.getenv('APP_ID')
+
+mod_id = os.getenv('MOD_ID')
+sm_id = os.getenv('SM_ID')
+gm_id = os.getenv('GM_ID')
+tm_id = os.getenv('TM_ID')
+
 observation_access = int(os.getenv('OBS_ROLE'))
 stats_access = int(os.getenv('HA_ROLE'))
 
@@ -31,31 +36,36 @@ hash_string = hash_bytes.hex()
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
-def getId(username):
+def getId(username, app_id):
     params = {
         "api_key": fc_api_key,
         "hash": hash_string,
-        "timestamp": timestamp
+        "timestamp": timestamp,
+        "project_id": app_id
     }
     url = "https://freedcamp.com/api/v1/tasks"
     response = requests.get(url, params=params)
     if response.status_code == 200:
         r = response.json()
+
+        pprint.pprint(r)
     
         def getTaskByTitle():
             for task in r["data"]["tasks"]:
                 if task["title"] == username:
+                    print(f"TASK: {task}")
                     return task
             return None
 
         if getTaskByTitle():
+            print(f"ID: {getTaskByTitle()["id"]}")
             return getTaskByTitle()["id"]
         else:
             return None
     else:
-        print(f"Error: {response.text}")
+        print(f"getId :: {response.text}")
 
-def postComment(task_id, contents, api_key, hash_string):
+def postComment(task_id, contents, api_key, hash_string, app_id):
     url = f"https://freedcamp.com/api/v1/comments"
     params = {
         "api_key": api_key,
@@ -64,11 +74,17 @@ def postComment(task_id, contents, api_key, hash_string):
     }
     data = {
         "description": contents,
-        "app_id": fc_app_id,
+        "app_id": app_id,
         "task_id": task_id
     }
 
     response = requests.post(url, json=data, params=params)
+
+    if response.status_code == 200:
+        r = response.json()
+    else:
+        print(f"postComment:: {response.text}")
+
 
 class Observation(commands.Cog):
     def __init__(self, bot):
@@ -82,7 +98,7 @@ class Observation(commands.Cog):
     @app_commands.guilds(discord.Object(id=server_id))
     @app_commands.describe(roblox_username="User to log an observation for.")
     @discord.app_commands.checks.has_any_role(observation_access)
-    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative"], description: str, evidence: discord.Attachment):
+    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative"], description: str, rank: Literal["Gamemaster", "Trial Moderator", "Moderator", "Senior Moderator"], evidence: discord.Attachment = None):
       
         current_month = datetime.now().month
         current_year = datetime.now().year
@@ -99,6 +115,24 @@ class Observation(commands.Cog):
           elif observation_type == "Negative":
               color = "c0392b"
               return color
+
+        def correctRankId(chosenRank):
+            match chosenRank:
+                case "Gamemaster":
+                    return gm_id
+                case "Trial Moderator":
+                    return tm_id
+                case "Moderator":
+                    return mod_id
+                case "Senior Moderator":
+                    return sm_id
+
+        def replaceEvidence():
+            if evidence:
+                return evidence.url
+            else:
+                image = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ft7.rbxcdn.com%2F180DAY-2a5fb6516cb2af0716dd4232c8928f8c&f=1&nofb=1&ipt=9058510af8dcc181d59a9f64b649de28a9cc877cdafa57a63243ce3542b5dd72"
+                return image
         
         embedcolor = determineEmbedColor()
         
@@ -109,13 +143,14 @@ class Observation(commands.Cog):
             @discord.ui.button(label="I've verified that the info is correct", style=discord.ButtonStyle.green)
             async def accept_application(self, interaction: discord.Interaction, view: discord.ui.View):
                 try:
+                    await interaction.response.defer(thinking=True)
                     comment = f"""
                                 <h2>
                                     <span style="color: #{determineSpanColor()}">
                                         <strong>{observation_type}</strong>
                                     </span> 
                                     - Logged by {interaction.user}({interaction.user.id}) 
-                                    <a href="{evidence.url}">(provided proof)</a>
+                                    <a href="{replaceEvidence()}">(provided proof)</a>
                                 </h2>
                                 
                                 <blockquote>
@@ -123,11 +158,10 @@ class Observation(commands.Cog):
                                 </blockquote>
                                 """.strip()
     
-    
-                    postComment(getId(roblox_username), comment, fc_api_key, hash_string)
+                    postComment(getId(roblox_username, correctRankId(rank)), comment, fc_api_key, hash_string, correctRankId(rank))
     
                     embed.set_footer(text="Abuse will lead to harsh punishment!")
-                    await interaction.response.send_message(embed=embed)
+                    await interaction.followup.send(embed=embed)
 
                     conn = sqlite3.connect("data.db")
                     c = conn.cursor()
@@ -150,7 +184,7 @@ class Observation(commands.Cog):
     
         embed = discord.Embed(title=f'Observing {roblox_username}', color=embedcolor)
         embed.set_author(name=f"Logged by {interaction.user}", icon_url=str(interaction.user.avatar))
-        embed.set_thumbnail(url=evidence.url)
+        embed.set_thumbnail(url=replaceEvidence())
         embed.add_field(name="Description", value=description, inline=True)
         embed.set_footer(text="This is a preview. Click the button below to send submit the observation. Resend the command with correct information if you've made a mistake.")
         await interaction.response.send_message(embed=embed, view=Buttons(), ephemeral=True)
