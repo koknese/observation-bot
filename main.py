@@ -54,9 +54,4 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"RU4 dev streams"))
     print(discord.__version__)
 
-@bot.event
-async def on_member_join(member):
-    joinRole = discord.Object(id=default_role)
-    await member.add_roles(joinRole)
-    
 bot.run(token)

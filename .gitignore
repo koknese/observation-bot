@@ -1,5 +1,6 @@
 data*
 .env
 .env.prod
+.env.test
 misc/__pycache__
 cogs/__pycache__
