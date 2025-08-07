@@ -11,7 +11,7 @@ intents = discord.Intents.all()
 intents.members = True
 
 load_dotenv('.env', override=True)
-server_id = os.getenv('SERVER_ID')
+server_id = os.getenv('SERVER_ID').strip()
 token = os.getenv('TOKEN')
 
 bot = commands.Bot(command_prefix="sudo ", intents=intents)

@@ -63,6 +63,7 @@ class Assistance(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def assistance(self, interaction:discord.Interaction, urgency:Literal["Low","Medium", "High"], roblox_username: str, description:str, server_era: str):
+        await interaction.response.defer(thinking=True, ephemeral=True)
         embed = discord.Embed(title=f"Assistance needed in {server_era}!",
                       url=f"https://www.roblox.com/users/{getUserId(roblox_username)}/profile",
                       colour=0x00b0f4)
@@ -92,7 +93,7 @@ class Assistance(commands.Cog):
         message = await assistance_channel_parsed.send(embed=embed)
         thread = await message.create_thread(name=f"{urgency} :: {roblox_username}")
         await thread.send(f"<@{interaction.user.id}> :: <@&1030362803757924452>")
-        await interaction.response.send_message("Sent!", ephemeral=True)
+        await interaction.followup.send("Sent!", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Assistance(bot), guild=discord.Object(id=server_id))
