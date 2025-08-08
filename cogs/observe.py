@@ -273,6 +273,9 @@ class Observation(commands.Cog):
             c.execute(f"DROP TABLE {"o" + str(user.id)}")
             pprint.pprint(f"{interaction.user} has dropped table {user.id}")
             await interaction.response.send_message(embed=embed)
+            conn.commit()
+            c.close()
+            conn.close()
         except Exception as e:
             await interaction.channel.send(e)
 
