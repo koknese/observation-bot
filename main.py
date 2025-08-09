@@ -47,6 +47,9 @@ async def on_ready():
     await bot.load_extension("cogs.observe")
     print("Obs cog loaded!")
 
+    await bot.load_extension("cogs.backup")
+    print("Backup cog loaded!")
+
     await bot.load_extension("cogs.modassistance")
     print("Mod assistance cog loaded!")
         

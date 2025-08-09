@@ -1,6 +1,8 @@
-data*
+*.db
 .env
+test.py
 .env.prod
 .env.test
 misc/__pycache__
 cogs/__pycache__
+.stfolder
