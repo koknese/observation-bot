@@ -70,7 +70,7 @@ class Assistance(commands.Cog):
 
         embed.set_author(name=interaction.user,
                          url=f"https://www.roblox.com/users/{getUserId(roblox_username)}/profile",
-                         icon_url=interaction.user.avatar.url)
+                         icon_url=interaction.user.avatar.url if interaction.user.avatar != None else interaction.user.display_avatar.url)
         
         embed.add_field(name="Urgency",
                         value=urgency,
