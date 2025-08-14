@@ -44,9 +44,9 @@ class Backup(GroupCog, group_name="backup", group_description="FC backups"):
         }
         url = "https://freedcamp.com/api/v1/tasks"
         response = requests.get(url, params=params)
+        await interaction.response.defer(thinking=True, ephemeral=True)
         if response.status_code == 200:
-            await interaction.channel.send(f"-# Got response 200 from Freedcamp API, collecting data... {interaction.user}")
-            await interaction.response.defer(thinking=True, ephemeral=True)
+            await interaction.followup.send(f"-# Got response 200 from Freedcamp API, collecting data... {interaction.user}")
             data = response.json()
             conn = sqlite3.connect('backup.db')
             c = conn.cursor()
@@ -62,9 +62,9 @@ class Backup(GroupCog, group_name="backup", group_description="FC backups"):
             conn.commit()
             c.close()
             conn.close()
-            await interaction.followup.send(f"Tasks and their descriptions for board {fc_app_id} collected!")
+            await interaction.followup.send(f"Tasks and their descriptions for board {fc_app_id} collected!", ephemeral=True)
         else:
-            await interaction.response.send_message(f"Got response {response.status_code} from Freedcamp API: `{response.text}`")
+            await interaction.followup.send(f"Got response {response.status_code} from Freedcamp API: `{response.text}`")
             print(f"getId :: {response.text}")
 
     @app_commands.command(

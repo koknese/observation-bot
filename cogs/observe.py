@@ -1,5 +1,4 @@
 from misc.rover import robloxToDiscord
-from cogs.modassistance import getUserId
 from discord import app_commands, Embed, ui
 from discord.utils import get
 from discord.ext import commands
@@ -17,6 +16,24 @@ import sqlite3
 
 intents = discord.Intents.all()
 intents.members = True
+
+def getUserId(username):
+    requestPayload = {
+            "usernames": [
+                username
+            ],
+            "excludeBannedUsers": True # Whether to include banned users within the request, change this as you wish
+           }
+        
+    responseData = requests.post(ID_API_ENDPOINT, json=requestPayload)
+        
+            # Make sure the request succeeded
+    assert responseData.status_code == 200
+        
+    userId = responseData.json()["data"][0]["id"]
+        
+    print(f"getUserId :: Fetched user ID of username {username} -> {userId}")
+    return userId
 
 load_dotenv()
 server_id = os.getenv('SERVER_ID')
@@ -184,10 +201,10 @@ class Observation(commands.Cog):
                     conn.close()
 
                     # dming part
-                    #user = interaction.client.get_user(int(robloxToDiscord(rover_token, server_id, getUserId(roblox_username))["discordUsers"][0]["user"]["id"])) # roblox username to discord id
-                    #embed.set_author(name=f"You have received a {observation_type.lower()} observation!", icon_url="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.sUVyywAHU0Q2V2hyo_dligAAAA%26pid%3DApi&f=1&ipt=d3f8072407cd9ca31c41b0ab08fa9104c7b3292fdb636a5d6d6e37c0591af2c8&ipo=images")
-                    #embed.set_footer(text="For any questions or concerns, go to the staff-meeting channel in Staff Hub.")
-                    #await user.send("# ATTENTION!", embed=embed)
+                    user = interaction.client.get_user(int(robloxToDiscord(rover_token, server_id, getUserId(roblox_username))["discordUsers"][0]["user"]["id"])) # roblox username to discord id
+                    embed.set_author(name=f"You have received a {observation_type.lower()} observation!", icon_url="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.sUVyywAHU0Q2V2hyo_dligAAAA%26pid%3DApi&f=1&ipt=d3f8072407cd9ca31c41b0ab08fa9104c7b3292fdb636a5d6d6e37c0591af2c8&ipo=images")
+                    embed.set_footer(text="For any questions or concerns, go to the staff-meeting channel in Staff Hub.")
+                    await user.send("# ATTENTION!", embed=embed)
                 except Exception as e:
                     await interaction.channel.send(f"An error has occured:\n```{e}```")
     
