@@ -49,14 +49,13 @@ tm_id = os.getenv('TM_ID')
 observation_access = int(os.getenv('OBS_ROLE'))
 stats_access = int(os.getenv('HA_ROLE'))
 
-timestamp = int(time.time() * 1000)  
-hash_bytes = hmac.new(fc_secret.encode(), (fc_api_key + str(timestamp)).encode(), hashlib.sha1).digest()
-hash_string = hash_bytes.hex()
-
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
 def getId(username, app_id):
+    timestamp = int(time.time() * 1000)  
+    hash_bytes = hmac.new(fc_secret.encode(), (fc_api_key + str(timestamp)).encode(), hashlib.sha1).digest()
+    hash_string = hash_bytes.hex()
     params = {
         "api_key": fc_api_key,
         "hash": hash_string,
@@ -67,13 +66,11 @@ def getId(username, app_id):
     response = requests.get(url, params=params)
     if response.status_code == 200:
         r = response.json()
-
-        pprint.pprint(r)
     
         def getTaskByTitle():
             for task in r["data"]["tasks"]:
                 if task["title"] == username:
-                    print(f"TASK: {task}")
+                    print(f"TASK FOUND")
                     return task
             return None
 
@@ -85,7 +82,10 @@ def getId(username, app_id):
     else:
         print(f"getId :: {response.text}")
 
-def postComment(task_id, contents, api_key, hash_string, app_id):
+def postComment(task_id, contents, api_key, app_id):
+    timestamp = int(time.time() * 1000)  
+    hash_bytes = hmac.new(fc_secret.encode(), (fc_api_key + str(timestamp)).encode(), hashlib.sha1).digest()
+    hash_string = hash_bytes.hex()
     url = f"https://freedcamp.com/api/v1/comments"
     params = {
         "api_key": api_key,
@@ -118,7 +118,7 @@ class Observation(commands.Cog):
     @app_commands.guilds(discord.Object(id=server_id))
     @app_commands.describe(roblox_username="User to log an observation for.")
     @discord.app_commands.checks.has_any_role(observation_access)
-    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative"], description: str, rank: Literal["Gamemaster", "Trial Moderator", "Moderator", "Senior Moderator"], evidence: discord.Attachment = None):
+    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, rank: Literal["Gamemaster", "Trial Moderator", "Moderator", "Senior Moderator"], evidence: discord.Attachment = None):
       
         current_month = datetime.now().month
         current_year = datetime.now().year
@@ -127,6 +127,8 @@ class Observation(commands.Cog):
             return discord.Color.green()
           elif observation_type == "Negative":
             return discord.Color.red()
+          elif observation_type == "Information" or "Neutral":
+            return discord.Color.lighter_grey()
     
         def determineSpanColor():
           if observation_type == "Positive":
@@ -134,6 +136,9 @@ class Observation(commands.Cog):
               return color
           elif observation_type == "Negative":
               color = "c0392b"
+              return color
+          else:
+              color = "808080"
               return color
 
         def correctRankId(chosenRank):
@@ -178,7 +183,7 @@ class Observation(commands.Cog):
                                 </blockquote>
                                 """.strip()
     
-                    postComment(getId(roblox_username, correctRankId(rank)), comment, fc_api_key, hash_string, correctRankId(rank))
+                    postComment(getId(roblox_username, correctRankId(rank)), comment, fc_api_key, correctRankId(rank))
     
                     embed.set_footer(text="Abuse will lead to harsh punishment!")
                     await interaction.followup.send(embed=embed)
@@ -201,10 +206,11 @@ class Observation(commands.Cog):
                     conn.close()
 
                     # dming part
-                    user = interaction.client.get_user(int(robloxToDiscord(rover_token, server_id, getUserId(roblox_username))["discordUsers"][0]["user"]["id"])) # roblox username to discord id
-                    embed.set_author(name=f"You have received a {observation_type.lower()} observation!", icon_url="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.sUVyywAHU0Q2V2hyo_dligAAAA%26pid%3DApi&f=1&ipt=d3f8072407cd9ca31c41b0ab08fa9104c7b3292fdb636a5d6d6e37c0591af2c8&ipo=images")
-                    embed.set_footer(text="For any questions or concerns, go to the staff-meeting channel in Staff Hub.")
-                    await user.send("# ATTENTION!", embed=embed)
+                    #user = interaction.client.get_user(int(robloxToDiscord(rover_token, server_id, getUserId(roblox_username))["discordUsers"][0]["user"]["id"])) # roblox username to discord id
+                    #embed.set_author(name=f"You have received a {observation_type.lower()} observation!", icon_url="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.sUVyywAHU0Q2V2hyo_dligAAAA%26pid%3DApi&f=1&ipt=d3f8072407cd9ca31c41b0ab08fa9104c7b3292fdb636a5d6d6e37c0591af2c8&ipo=images")
+                    #embed.set_footer(text="For any questions or concerns, go to the staff-meeting channel in Staff Hub.")
+                    #embed.set_thumbnail(None)
+                    #await user.send("# ATTENTION!", embed=embed)
                 except Exception as e:
                     await interaction.channel.send(f"An error has occured:\n```{e}```")
     
@@ -274,7 +280,7 @@ class Observation(commands.Cog):
         description='Wipe the observation log for an admin'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @app_commands.describe(user="!!THIS ACTION IS IRREVERSIBLE!! The admin to get his observation stats wiped.")
+    @app_commands.describe(user="!!THIS ACTION IS IRREVERSIBLE!! The admin to get their observation stats wiped.")
     @discord.app_commands.checks.has_any_role(stats_access)
     async def drop_table(self, interaction: discord.Interaction, user: discord.Member):
         try:
@@ -289,6 +295,33 @@ class Observation(commands.Cog):
             c = conn.cursor()
             c.execute(f"DROP TABLE {"o" + str(user.id)}")
             pprint.pprint(f"{interaction.user} has dropped table {user.id}")
+            await interaction.response.send_message(embed=embed)
+            conn.commit()
+            c.close()
+            conn.close()
+        except Exception as e:
+            await interaction.channel.send(e)
+            
+    @app_commands.command(
+        name='delete-obs',
+        description='Delete a number of observations for a user'
+    )
+    @app_commands.guilds(discord.Object(id=server_id))
+    @app_commands.describe(user="!!THIS ACTION IS IRREVERSIBLE!! The admin to get their observation stats wiped.")
+    @discord.app_commands.checks.has_any_role(stats_access)
+    async def delete_obs(self, interaction: discord.Interaction, user: discord.Member, number: int):
+        try:
+            embed = discord.Embed(title=f"All data has been irreversibly deleted.",
+                description=f"### :warning: Observation stats for <@{user.id}> deleted! \n### This incident will be reported.",
+                colour=0xe01b24)
+
+            embed.set_author(name=f"Stats removed by {interaction.user}",
+            icon_url=interaction.user.avatar)
+
+            conn = sqlite3.connect('data.db')
+            c = conn.cursor()
+            c.execute(f"DELETE FROM {"o" + str(user.id)} LIMIT {number}")
+            pprint.pprint(f"{interaction.user} has deleted {number} stats for {user.id}")
             await interaction.response.send_message(embed=embed)
             conn.commit()
             c.close()

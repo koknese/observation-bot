@@ -34,7 +34,7 @@ class Backup(GroupCog, group_name="backup", group_description="FC backups"):
             description="create fc backups"
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @discord.app_commands.checks.has_any_role(ha_role)
+    @app_commands.checks.has_permissions(administrator=True)
     async def create(self, interaction: discord.Interaction, fc_app_id: str):
         params = {
             "api_key": fc_api_key,
@@ -72,7 +72,7 @@ class Backup(GroupCog, group_name="backup", group_description="FC backups"):
             description="request the backup database"
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @discord.app_commands.checks.has_any_role(ha_role)
+    @app_commands.checks.has_permissions(administrator=True)
     async def request(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
         try:
