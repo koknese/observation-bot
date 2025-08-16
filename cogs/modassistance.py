@@ -76,7 +76,7 @@ class Assistance(commands.Cog):
         assistance_channel_parsed = interaction.client.get_channel(int(assistance_channel))
 
         message = await assistance_channel_parsed.send(embed=embed)
-        thread = await message.create_thread(name=f"{urgency} :: {usernameRover}")
+        thread = await message.create_thread(name=f"{urgency} :: {usernameRover}", auto_archive_duration=60)
         await thread.send(f"<@{interaction.user.id}> :: <@&1030362803757924452>")
         await interaction.followup.send("Sent!", ephemeral=True)
 
