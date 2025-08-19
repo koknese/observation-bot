@@ -11,6 +11,7 @@ import os
 import time 
 import pprint
 import discord
+import json
 import hmac
 import hashlib
 import requests
@@ -56,6 +57,17 @@ def getUserId(username):
         
     print(f"getUserId :: Fetched user ID of username {username} -> {userId}")
     return userId
+
+def getRankInGroup(userid):
+    if userid:
+        request = requests.get(f"https://groups.roblox.com/v1/users/{userid}/groups/roles")
+        response = json.loads(request.text)
+        for i in response["data"]:
+            if i["group"]["id"] == 2568175:
+                return i["role"]["name"]
+    else:
+        error = "User ID couldn't be found or user not in group."
+        return error
 
 def getId(username, app_id):
     timestamp = int(time.time() * 1000)  
@@ -124,7 +136,7 @@ class Observation(commands.Cog):
     @app_commands.guilds(discord.Object(id=server_id))
     @app_commands.describe(roblox_username="User to log an observation for.")
     @discord.app_commands.checks.has_any_role(observation_access)
-    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, rank: Literal["Gamemaster", "Trial Moderator", "Moderator", "Senior Moderator"], evidence: discord.Attachment = None):
+    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, evidence: discord.Attachment = None):
         if interaction.channel.id != logging_channel_id:
             await interaction.response.send_message(f"This is only available in <#{logging_channel_id}>", ephemeral=True)
             return
@@ -184,20 +196,21 @@ class Observation(commands.Cog):
                 return image
 
         roblox_username = roblox_username.strip()
+        roblox_id = getUserId(roblox_username)
         current_month = datetime.now().month
         current_year = datetime.now().year
 
         class ObservationLayout(discord.ui.Container):
             mediagallery = discord.ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png"))
             separator1 = discord.ui.Separator()
-            text1 = discord.ui.TextDisplay(f"# An observation was made for {roblox_username}")
+            text1 = discord.ui.TextDisplay(f"# {"An" if observation_type == "Information" else "A"} {"informational" if observation_type == "Information" else observation_type.lower()} observation was made for {roblox_username}")
             text2 = discord.ui.TextDisplay(f"## {determineEmoji()} This observation is: ***{observation_type}***"),
             text3 = discord.ui.TextDisplay(f"> *{description}*")
             author_text = discord.ui.TextDisplay(f"- <@{interaction.user.id}>")
             evidence_media = discord.ui.MediaGallery(discord.MediaGalleryItem(replaceEvidence()))
             separator2 = discord.ui.Separator()
-            dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{int(robloxToDiscord(rover_token, server_id, getUserId(roblox_username))['discordUsers'][0]['user']['id'])}", label="DMs"))
-            roblox_section = discord.ui.Section(ui.TextDisplay("User's ROBLOX profile"), accessory=discord.ui.Button(url=f"https://roblox.com/users/{getUserId(roblox_username)}/profile", label="ROBLOX"))
+            dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{robloxToDiscord(rover_token, server_id, roblox_id)['discordUsers'][0]['user']['id']}", label="DMs"))
+            roblox_section = discord.ui.Section(ui.TextDisplay("User's ROBLOX profile"), accessory=discord.ui.Button(url=f"https://roblox.com/users/{roblox_id}/profile", label="ROBLOX"))
             preview_warning = discord.ui.TextDisplay("This is a preview. Verify all information before accepting changes.")
             action_row = discord.ui.ActionRow()
 
@@ -218,8 +231,8 @@ class Observation(commands.Cog):
                                     {description}
                                 </blockquote>
                                 """.strip()
-        
-                    postComment(getId(roblox_username, correctRankId(rank)), comment, fc_api_key, correctRankId(rank))
+                    user_rank = getRankInGroup(roblox_id)
+                    postComment(getId(roblox_username, correctRankId(user_rank)), comment, fc_api_key, correctRankId(user_rank))
         
                     self.remove_item(self.preview_warning)
                     self.remove_item(self.action_row)
@@ -245,7 +258,7 @@ class Observation(commands.Cog):
                     await interaction.response.send_message("Observation submitted, logging...", ephemeral=True)
                 except Exception as e:
                     print(e)
-                    await interaction.followup.send(f"```{e}```", ephemeral=True)
+                    await interaction.channel.send(f"```{e}```", ephemeral=True)
 
         my_view = discord.ui.LayoutView()
         cont = ObservationLayout(accent_colour=determineEmbedColor())
