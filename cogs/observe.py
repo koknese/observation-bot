@@ -86,7 +86,7 @@ def getId(username, app_id):
     
         def getTaskByTitle():
             for task in r["data"]["tasks"]:
-                if task["title"] == username:
+                if task["title"].lower() == username.lower(): # using .lower in order to bypass case sensitivity 
                     print(f"TASK FOUND")
                     return task
             return None
@@ -203,9 +203,8 @@ class Observation(commands.Cog):
         class ObservationLayout(discord.ui.Container):
             mediagallery = discord.ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png"))
             separator1 = discord.ui.Separator()
-            text1 = discord.ui.TextDisplay(f"# {"An" if observation_type == "Information" else "A"} {"informational" if observation_type == "Information" else observation_type.lower()} observation was made for {roblox_username}")
-            text2 = discord.ui.TextDisplay(f"## {determineEmoji()} This observation is: ***{observation_type}***"),
-            text3 = discord.ui.TextDisplay(f"> *{description}*")
+            text1 = discord.ui.TextDisplay(f"# {determineEmoji()} {"An" if observation_type == "Information" else "A"} {"informational" if observation_type == "Information" else observation_type.lower()} observation was made for {roblox_username}")
+            text2 = discord.ui.TextDisplay(f"> *{description}*")
             author_text = discord.ui.TextDisplay(f"- <@{interaction.user.id}>")
             evidence_media = discord.ui.MediaGallery(discord.MediaGalleryItem(replaceEvidence()))
             separator2 = discord.ui.Separator()
@@ -218,6 +217,7 @@ class Observation(commands.Cog):
             @action_row.button(label="I've confirmed that the provided information is correct.", style=discord.ButtonStyle.success)
             async def my_button(self, interaction, button):
                 try:
+                    await interaction.response.defer()
                     comment = f"""
                                 <h2>
                                     <span style="color: #{determineSpanColor()}">
@@ -236,29 +236,31 @@ class Observation(commands.Cog):
         
                     self.remove_item(self.preview_warning)
                     self.remove_item(self.action_row)
-
-                    conn = sqlite3.connect("data.db")
-                    c = conn.cursor()
-                    tableName = "o" + str(interaction.user.id) # bypassing sqlite not allowing numbers as table names
-                    c.execute(f"""CREATE TABLE IF NOT EXISTS {tableName}(
+                    if observation_type != "Information":
+                        conn = sqlite3.connect("data.db")
+                        c = conn.cursor()
+                        tableName = "o" + str(interaction.user.id) # bypassing sqlite not allowing numbers as table names
+                        c.execute(f"""CREATE TABLE IF NOT EXISTS {tableName}(
                                 short_date TEXT NOT NULL,
                                 timestamp TEXT NOT NULL
                                 ) 
                               """)
 
-                    shortDate = str(current_month) + "." + str(current_year)
-                    unix_timestamp = str(int(time.time())) # horrible but works
+                        shortDate = str(current_month) + "." + str(current_year)
+                        unix_timestamp = str(int(time.time())) # horrible but works
 
-                    c.execute(f"INSERT INTO {tableName} (short_date, timestamp) VALUES (?, ?)", (shortDate, unix_timestamp))
-                    conn.commit()
-                    c.close()
-                    conn.close()
+                        c.execute(f"INSERT INTO {tableName} (short_date, timestamp) VALUES (?, ?)", (shortDate, unix_timestamp))
+                        conn.commit()
+                        c.close()
+                        conn.close()
+                    else:
+                        pass
                     logging_channel_parsed = interaction.client.get_channel(logging_channel_id)
                     await logging_channel_parsed.send(view=self.view)
-                    await interaction.response.send_message("Observation submitted, logging...", ephemeral=True)
+                    await interaction.followup.send("Observation submitted, logging...", ephemeral=True)
                 except Exception as e:
                     print(e)
-                    await interaction.channel.send(f"```{e}```", ephemeral=True)
+                    await interaction.channel.send(f"```{e}```")
 
         my_view = discord.ui.LayoutView()
         cont = ObservationLayout(accent_colour=determineEmbedColor())
@@ -345,7 +347,9 @@ class Observation(commands.Cog):
             c = conn.cursor()
             c.execute(f"DROP TABLE {"o" + str(user.id)}")
             pprint.pprint(f"{interaction.user} has dropped table {user.id}")
+            logs_parsed = interaction.client.get_channel(deletion_log)
             await interaction.response.send_message(embed=embed)
+            await logs_parsed.send(embed=embed)
             conn.commit()
             c.close()
             conn.close()
@@ -361,7 +365,7 @@ class Observation(commands.Cog):
     @discord.app_commands.checks.has_any_role(stats_access)
     async def delete_obs(self, interaction: discord.Interaction, user: discord.Member, number: int):
         try:
-            logs_parsed = interaction.client.get_channel(logging_channel_id)
+            logs_parsed = interaction.client.get_channel(deletion_log)
             embed = discord.Embed(title=f"All data has been irreversibly deleted.",
                 description=f"### :warning: {number} Observation stats for <@{user.id}> deleted! \n### This incident will be reported.",
                 colour=0xe01b24)
