@@ -41,7 +41,7 @@ stats_access = int(os.getenv('HA_ROLE'))
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
-def getUserId(username):
+def getUserId(username, interaction = None):
     requestPayload = {
             "usernames": [
                 username
@@ -134,14 +134,15 @@ class Observation(commands.Cog):
         description='Submit an observation of a staff member'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @app_commands.describe(roblox_username="User to log an observation for.")
+    @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"")
     @discord.app_commands.checks.has_any_role(observation_access)
     async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, evidence: discord.Attachment = None):
         if interaction.channel.id != logging_channel_id:
             await interaction.response.send_message(f"This is only available in <#{logging_channel_id}>", ephemeral=True)
             return
         
-        await interaction.response.defer(thinking=True)
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        description = description.replace("\\n", "\n")
         
         def determineEmbedColor():
           if observation_type == "Positive":
@@ -199,16 +200,17 @@ class Observation(commands.Cog):
         roblox_id = getUserId(roblox_username)
         current_month = datetime.now().month
         current_year = datetime.now().year
+        discord_id = robloxToDiscord(rover_token, server_id, roblox_id)['discordUsers'][0]['user']['id']
 
         class ObservationLayout(discord.ui.Container):
             mediagallery = discord.ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png"))
             separator1 = discord.ui.Separator()
-            text1 = discord.ui.TextDisplay(f"# {determineEmoji()} {"An" if observation_type == "Information" else "A"} {"informational" if observation_type == "Information" else observation_type.lower()} observation was made for {roblox_username}")
-            text2 = discord.ui.TextDisplay(f"> *{description}*")
+            text1 = discord.ui.TextDisplay(f"# {determineEmoji()} {"An" if observation_type == "Information" else "A"} {"informational" if observation_type == "Information" else observation_type.lower()} observation was made for {roblox_username} (<@{discord_id}>)")
+            text2 = discord.ui.TextDisplay("\n".join(f"> {line}" for line in description.split("\n")))
             author_text = discord.ui.TextDisplay(f"- <@{interaction.user.id}>")
             evidence_media = discord.ui.MediaGallery(discord.MediaGalleryItem(replaceEvidence()))
             separator2 = discord.ui.Separator()
-            dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{robloxToDiscord(rover_token, server_id, roblox_id)['discordUsers'][0]['user']['id']}", label="DMs"))
+            dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{discord_id}", label="DMs"))
             roblox_section = discord.ui.Section(ui.TextDisplay("User's ROBLOX profile"), accessory=discord.ui.Button(url=f"https://roblox.com/users/{roblox_id}/profile", label="ROBLOX"))
             preview_warning = discord.ui.TextDisplay("This is a preview. Verify all information before accepting changes.")
             action_row = discord.ui.ActionRow()
@@ -228,7 +230,7 @@ class Observation(commands.Cog):
                                 </h2>
                                 
                                 <blockquote>
-                                    {description}
+                                    {description.replace("\n", "<br>")}
                                 </blockquote>
                                 """.strip()
                     user_rank = getRankInGroup(roblox_id)
