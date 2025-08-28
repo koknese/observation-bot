@@ -24,6 +24,10 @@ async def load_cog(interaction: discord.Interaction, extension: str):
     await interaction.response.send_message(f"Cog '{extension}' loaded.")
     await tree.sync(guild=discord.Object(id=server_id)) 
     print(f"Cog '{extension}' has been loaded.")
+
+@tree.command(name="ping", description="DEBUG: ping", guild=discord.Object(id=server_id))
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Ponged back @ {bot.latency * 1000}ms", ephemeral=True)
     
 @tree.command(name="unload", description="DEBUG: unload a cog", guild=discord.Object(id=server_id))
 @discord.app_commands.checks.has_permissions(administrator=True)
