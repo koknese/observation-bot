@@ -45,7 +45,7 @@ class Assistance(commands.Cog):
         description="Call for mod assistance for in-game support"
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    async def assistance(self, interaction:discord.Interaction, urgency:Literal["Low","Medium", "High"], description:str, server_era: str):
+    async def assistance(self, interaction:discord.Interaction, urgency:Literal["Low","Medium", "High"], description:str, server_era: str, image: discord.Attachment = None):
         userIdRover = discordToRoblox(rover_token, server_id, interaction.user.id)["robloxId"]
         usernameRover = discordToRoblox(rover_token, server_id, interaction.user.id)["cachedUsername"]
         await interaction.response.defer(thinking=True, ephemeral=True)
@@ -72,6 +72,7 @@ class Assistance(commands.Cog):
                 value=server_era,
                 inline=False)
         embed.set_thumbnail(url=getHeadshot(userIdRover))
+        embed.set_image(url=image.url if image else None)
 
         assistance_channel_parsed = interaction.client.get_channel(int(assistance_channel))
 
@@ -79,6 +80,6 @@ class Assistance(commands.Cog):
         thread = await message.create_thread(name=f"{urgency} :: {usernameRover}", auto_archive_duration=60)
         await thread.send(f"<@{interaction.user.id}> :: <@&1030362803757924452>")
         await interaction.followup.send("Sent!", ephemeral=True)
-
+        
 async def setup(bot: commands.Bot):
     await bot.add_cog(Assistance(bot), guild=discord.Object(id=server_id))

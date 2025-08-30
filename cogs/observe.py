@@ -1,7 +1,7 @@
 from misc.rover import robloxToDiscord
 from misc.imgbb import upload
 from misc.paginator import Pagination
-from discord import app_commands, Embed, ui
+from discord import app_commands, ui
 from discord.utils import get
 from discord.ext import commands
 from datetime import datetime
@@ -134,9 +134,9 @@ class Observation(commands.Cog):
         description='Submit an observation of a staff member'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"")
+    @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"", count_towards_quota="If set to false, this observation will not be counted towards your observation logs. Set it to false if you're making this observation for smchive/testing")
     @discord.app_commands.checks.has_any_role(observation_access)
-    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, evidence: discord.Attachment = None):
+    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, count_towards_quota: bool, evidence: discord.Attachment = None):
         if interaction.channel.id != logging_channel_id:
             await interaction.response.send_message(f"This is only available in <#{logging_channel_id}>", ephemeral=True)
             return
@@ -212,6 +212,7 @@ class Observation(commands.Cog):
             separator2 = discord.ui.Separator()
             dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{discord_id}", label="DMs"))
             roblox_section = discord.ui.Section(ui.TextDisplay("User's ROBLOX profile"), accessory=discord.ui.Button(url=f"https://roblox.com/users/{roblox_id}/profile", label="ROBLOX"))
+            text3 = discord.ui.TextDisplay(f"-# Observation counted towards quota: **{count_towards_quota}**")
             preview_warning = discord.ui.TextDisplay("This is a preview. Verify all information before accepting changes.")
             action_row = discord.ui.ActionRow()
 
@@ -238,7 +239,8 @@ class Observation(commands.Cog):
         
                     self.remove_item(self.preview_warning)
                     self.remove_item(self.action_row)
-                    if observation_type != "Information":
+                    __import__('pprint').pprint(count_towards_quota)
+                    if (observation_type != "Information") and count_towards_quota:
                         conn = sqlite3.connect("data.db")
                         c = conn.cursor()
                         tableName = "o" + str(interaction.user.id) # bypassing sqlite not allowing numbers as table names
@@ -268,8 +270,6 @@ class Observation(commands.Cog):
         cont = ObservationLayout(accent_colour=determineEmbedColor())
         my_view.add_item(cont)
 
-        
-        embedcolor = determineEmbedColor()
         await interaction.followup.send(view=my_view, ephemeral=True)
 
     @app_commands.command(
