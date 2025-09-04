@@ -20,6 +20,7 @@ load_dotenv("../.env")
 server_id = os.getenv('SERVER_ID')
 assistance_channel = os.getenv('ASSISTANCE_CHANNEL')
 rover_token = os.getenv('ROVER_KEY')
+game_staff_role = os.getenv("GS_ROLE")
 
 # converts username to user headshot
 def getHeadshot(userId):
@@ -34,6 +35,25 @@ def getHeadshot(userId):
         placeholderImg = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.imgflip.com%2Fd0tb7.jpg&f=1&nofb=1&ipt=e1c23bf6c418254a56c19b09cc9ece6238ead393652e54278f0d535f9fb81c56"
         return placeholderImg
 
+class Closebutton(ui.View):
+    def __init__(self, interaction_user, message, thread):
+        super().__init__()
+        self.interaction_user = interaction_user
+        self.message = message
+        self.thread = thread
+        button = discord.ui.Button(label='Close ticket', style=discord.ButtonStyle.red)
+        button.callback = self.close_ticket
+        self.add_item(button)
+
+    async def close_ticket(self, interaction: discord.Interaction):
+        role = interaction.guild.get_role(int(game_staff_role))
+        if (interaction.user.id == self.interaction_user) or (role in interaction.user.roles):
+            await interaction.response.send_message(f"<@{interaction.user.id}>, deleting thread and message...")
+            await self.thread.delete(reason="Closed")
+            await self.message.delete()
+        else:
+            await interaction.response.send_message("No permissions to delete ticket", ephemeral=True)
+
 
 class Assistance(commands.Cog):
     def __init__(self, bot):
@@ -46,6 +66,8 @@ class Assistance(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def assistance(self, interaction:discord.Interaction, urgency:Literal["Low","Medium", "High"], description:str, server_era: str, image: discord.Attachment = None):
+        __import__('pprint').pprint("hahaha")
+
         userIdRover = discordToRoblox(rover_token, server_id, interaction.user.id)["robloxId"]
         usernameRover = discordToRoblox(rover_token, server_id, interaction.user.id)["cachedUsername"]
         await interaction.response.defer(thinking=True, ephemeral=True)
@@ -78,7 +100,7 @@ class Assistance(commands.Cog):
 
         message = await assistance_channel_parsed.send(embed=embed)
         thread = await message.create_thread(name=f"{urgency} :: {usernameRover}", auto_archive_duration=60)
-        await thread.send(f"<@{interaction.user.id}> :: <@&1030362803757924452>")
+        await thread.send(f"<@{interaction.user.id}> :: <@&1030362803757924452>", view=Closebutton(interaction.user.id, message, thread))
         await interaction.followup.send("Sent!", ephemeral=True)
         
 async def setup(bot: commands.Bot):
