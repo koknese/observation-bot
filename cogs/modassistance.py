@@ -21,7 +21,6 @@ server_id = os.getenv('SERVER_ID')
 assistance_channel = os.getenv('ASSISTANCE_CHANNEL')
 rover_token = os.getenv('ROVER_KEY')
 game_staff_role = os.getenv("GS_ROLE")
-
 # converts username to user headshot
 def getHeadshot(userId):
     userRawHeadshot = f"https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={userId}&format=png&size=352x352"
@@ -66,8 +65,6 @@ class Assistance(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def assistance(self, interaction:discord.Interaction, urgency:Literal["Low","Medium", "High"], description:str, server_era: str, image: discord.Attachment = None):
-        __import__('pprint').pprint("hahaha")
-
         userIdRover = discordToRoblox(rover_token, server_id, interaction.user.id)["robloxId"]
         usernameRover = discordToRoblox(rover_token, server_id, interaction.user.id)["cachedUsername"]
         await interaction.response.defer(thinking=True, ephemeral=True)
