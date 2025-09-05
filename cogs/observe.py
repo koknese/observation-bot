@@ -128,15 +128,14 @@ class Observation(commands.Cog):
         self.bot = bot
         self._last_member = None
 
-
     @app_commands.command(
         name='observe',
         description='Submit an observation of a staff member'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"", count_towards_quota="If set to false, this observation will not be counted towards your observation logs. Set it to false if you're making this observation for smchive/testing")
+    @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"", count_towards_quota="If false, this won't log into your observation stats.", primary_evidence="To add more images, you must have primary_evidence uploaded. This will also be seen in FC.")
     @discord.app_commands.checks.has_any_role(observation_access)
-    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, count_towards_quota: bool, evidence: discord.Attachment = None):
+    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, count_towards_quota: bool, primary_evidence: discord.Attachment = None, evidence2: discord.Attachment = None, evidence3: discord.Attachment = None, evidence4: discord.Attachment = None, evidence5: discord.Attachment = None, evidence6: discord.Attachment = None, evidence7: discord.Attachment = None,):
         if interaction.channel.id != logging_channel_id:
             await interaction.response.send_message(f"This is only available in <#{logging_channel_id}>", ephemeral=True)
             return
@@ -188,14 +187,6 @@ class Observation(commands.Cog):
                 case "Senior Moderator":
                     return sm_id
 
-        def replaceEvidence():
-            if evidence:
-                uploaded = upload(imgbb_key, evidence.url)
-                return uploaded["data"]["display_url"]
-            else:
-                image = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ft7.rbxcdn.com%2F180DAY-2a5fb6516cb2af0716dd4232c8928f8c&f=1&nofb=1&ipt=9058510af8dcc181d59a9f64b649de28a9cc877cdafa57a63243ce3542b5dd72"
-                return image
-
         roblox_username = roblox_username.strip()
         roblox_id = getUserId(roblox_username)
         current_month = datetime.now().month
@@ -208,7 +199,13 @@ class Observation(commands.Cog):
             text1 = discord.ui.TextDisplay(f"# {determineEmoji()} {"An" if observation_type == "Information" else "A"} {"informational" if observation_type == "Information" else observation_type.lower()} observation was made for {roblox_username} (<@{discord_id}>)")
             text2 = discord.ui.TextDisplay("\n".join(f"> {line}" for line in description.split("\n")))
             author_text = discord.ui.TextDisplay(f"- <@{interaction.user.id}>")
-            evidence_media = discord.ui.MediaGallery(discord.MediaGalleryItem(replaceEvidence()))
+            if primary_evidence:
+                evidence_media = discord.ui.MediaGallery()
+            for evidence in [primary_evidence, evidence2, evidence3, evidence4, evidence5, evidence6, evidence7]:
+                if evidence:
+                    link = upload(imgbb_key, evidence.url)["data"]["display_url"]
+                    evidence_media.add_item(media=link)
+
             separator2 = discord.ui.Separator()
             dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{discord_id}", label="DMs"))
             roblox_section = discord.ui.Section(ui.TextDisplay("User's ROBLOX profile"), accessory=discord.ui.Button(url=f"https://roblox.com/users/{roblox_id}/profile", label="ROBLOX"))
@@ -226,13 +223,14 @@ class Observation(commands.Cog):
                                     <span style="color: #{determineSpanColor()}">
                                         <strong>{observation_type}</strong>
                                     </span> 
-                                    - Logged by {interaction.user}({interaction.user.id}) 
-                                    <a href="{replaceEvidence()}">(provided proof)</a>
+                                    - Logged by {interaction.user} ({interaction.user.id}) 
+                                    {f'<a href={self.evidence_media.items[0].media.url}>(provided proof)</a>' if self.evidence_media.items[0].media.url is not None else ''}
                                 </h2>
                                 
                                 <blockquote>
                                     {description.replace("\n", "<br>")}
                                 </blockquote>
+                                {f"<h3>This observation contains extra evidence found in observation-logging.</h3>" if evidence2 is not None else ""}
                                 """.strip()
                     user_rank = getRankInGroup(roblox_id)
                     postComment(getId(roblox_username, correctRankId(user_rank)), comment, fc_api_key, correctRankId(user_rank))

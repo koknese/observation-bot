@@ -52,6 +52,7 @@ class Closebutton(ui.View):
             await self.message.delete()
         else:
             await interaction.response.send_message("No permissions to delete ticket", ephemeral=True)
+            __import__('pprint').pprint(f"Ticket closed by {interaction.user}")
 
 
 class Assistance(commands.Cog):
