@@ -66,8 +66,10 @@ class Assistance(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def assistance(self, interaction:discord.Interaction, urgency:Literal["Low","Medium", "High"], description:str, server_era: str, image: discord.Attachment = None):
-        userIdRover = discordToRoblox(rover_token, server_id, interaction.user.id)["robloxId"]
-        usernameRover = discordToRoblox(rover_token, server_id, interaction.user.id)["cachedUsername"]
+        roverResponse = discordToRoblox(rover_token, server_id, interaction.user.id)
+        response_data = await roverResponse 
+        userIdRover = response_data["robloxId"]
+        usernameRover = response_data["cachedUsername"]
         await interaction.response.defer(thinking=True, ephemeral=True)
         embed = discord.Embed(title=f"Assistance needed in {server_era}!",
                       url=f"https://www.roblox.com/users/{userIdRover}/profile",

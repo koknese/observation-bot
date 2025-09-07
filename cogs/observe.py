@@ -191,7 +191,9 @@ class Observation(commands.Cog):
         roblox_id = getUserId(roblox_username)
         current_month = datetime.now().month
         current_year = datetime.now().year
-        discord_id = robloxToDiscord(rover_token, server_id, roblox_id)['discordUsers'][0]['user']['id']
+
+        response = await robloxToDiscord(rover_token, server_id, roblox_id)
+        discord_id = response['discordUsers'][0]['user']['id']
 
         class ObservationLayout(discord.ui.Container):
             mediagallery = discord.ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png"))
