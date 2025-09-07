@@ -7,3 +7,5 @@ misc/__pycache__
 cogs/__pycache__
 .stfolder
 .stversions
+data.sqlite
+cogs/__pycache__/
