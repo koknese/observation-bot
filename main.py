@@ -56,6 +56,9 @@ async def on_ready():
 
     await bot.load_extension("cogs.modassistance")
     print("Mod assistance cog loaded!")
+
+    await bot.load_extension("cogs.editbans")
+    print("Edit bans cog loaded!")
         
     await tree.sync(guild=discord.Object(id=server_id))  # Sync the commands after loading the cog
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"RU4 dev streams"))
