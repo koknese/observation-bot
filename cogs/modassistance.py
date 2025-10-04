@@ -34,27 +34,6 @@ def getHeadshot(userId):
         placeholderImg = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.imgflip.com%2Fd0tb7.jpg&f=1&nofb=1&ipt=e1c23bf6c418254a56c19b09cc9ece6238ead393652e54278f0d535f9fb81c56"
         return placeholderImg
 
-class Closebutton(ui.View):
-    def __init__(self, interaction_user, message, thread):
-        super().__init__()
-        self.interaction_user = interaction_user
-        self.message = message
-        self.thread = thread
-        button = discord.ui.Button(label='Close ticket', style=discord.ButtonStyle.red)
-        button.callback = self.close_ticket
-        self.add_item(button)
-
-    async def close_ticket(self, interaction: discord.Interaction):
-        role = interaction.guild.get_role(int(game_staff_role))
-        if (interaction.user.id == self.interaction_user) or (role in interaction.user.roles):
-            await interaction.response.send_message(f"<@{interaction.user.id}>, deleting thread and message...")
-            await self.thread.delete(reason="Closed")
-            await self.message.delete()
-        else:
-            await interaction.response.send_message("No permissions to delete ticket", ephemeral=True)
-            __import__('pprint').pprint(f"Ticket closed by {interaction.user}")
-
-
 class Assistance(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -100,8 +79,27 @@ class Assistance(commands.Cog):
 
         message = await assistance_channel_parsed.send(embed=embed)
         thread = await message.create_thread(name=f"{urgency} :: {usernameRover}", auto_archive_duration=60)
-        await thread.send(f"<@{interaction.user.id}> :: <@&1030362803757924452>", view=Closebutton(interaction.user.id, message, thread))
+        await thread.send(content=f"<@{interaction.user.id}> :: <@&1030362803757924452>\nRemember to run /close-ticket upon completion!")
         await interaction.followup.send("Sent!", ephemeral=True)
+
+    @app_commands.command(
+        name="close-ticket",
+        description="Close a ticket"
+    )
+    @discord.app_commands.checks.has_any_role("Contractor", "Game Staff", "Developer")
+    @app_commands.guilds(discord.Object(id=server_id))
+    async def close(self, interaction:discord.Interaction):
+        if interaction.channel.__class__.__name__ == "Thread":
+            if interaction.channel.parent.id == int(assistance_channel):
+                logging = interaction.client.get_channel(1402736513543831583)
+                await interaction.response.send_message("Closing...")
+                await interaction.channel.starter_message.delete()
+                await interaction.channel.delete(reason="Closed")
+                await logging.send(f"{interaction.user} has closed a mod-assistance ticket.")
+            else:
+                await interaction.response.send_message("Not a mod-assistance ticket", ephemeral=True)
+        else:
+            await interaction.response.send_message("Not a mod-assistance ticket", ephemeral=True)
         
 async def setup(bot: commands.Bot):
     await bot.add_cog(Assistance(bot), guild=discord.Object(id=server_id))
