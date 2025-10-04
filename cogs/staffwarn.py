@@ -89,8 +89,9 @@ class Staffwarns(commands.Cog):
     #@discord.app_commands.checks.has_any_role("Administrator")
     async def viewarns(self, interaction: discord.Interaction, user: discord.Member, warn_type:Literal["Game staff", "Chat staff"]):
         conn = sqlite3.connect("data.db")
+        unix_timestamp = int(time.time()) # horrible but works
         c = conn.cursor()
-        c.execute(f"SELECT * FROM warns WHERE warned_user={user.id} AND warn_category='{warn_type}'")
+        c.execute(f"SELECT * FROM warns WHERE warned_user={user.id} AND warn_category='{warn_type}'AND  timestamp >= {unix_timestamp - 15778476}")
         results = c.fetchall()
         if not results:
             await interaction.response.send_message(f"No warns for <@{user.id}>!", ephemeral=True)
