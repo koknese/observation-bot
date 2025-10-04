@@ -91,7 +91,7 @@ class Staffwarns(commands.Cog):
         conn = sqlite3.connect("data.db")
         unix_timestamp = int(time.time()) # horrible but works
         c = conn.cursor()
-        c.execute(f"SELECT * FROM warns WHERE warned_user={user.id} AND warn_category='{warn_type}'AND  timestamp >= {unix_timestamp - 15778476}")
+        c.execute(f"SELECT * FROM warns WHERE warned_user={user.id} AND warn_category='{warn_type}'AND  timestamp >= {unix_timestamp - 7889238}")
         results = c.fetchall()
         if not results:
             await interaction.response.send_message(f"No warns for <@{user.id}>!", ephemeral=True)
