@@ -104,9 +104,9 @@ class Staffwarns(commands.Cog):
             offset = (page-1) * L
             for result in results[offset:offset+L]:
                 if result[5] != 1:
-                    emb.description += f"<@{result[0]}> -- https://discord.com/channels/252552812427214849/1402736513543831583/{result[3]}\n"
+                    emb.description += f"<@{result[0]}> -- https://discord.com/channels/252552812427214849/1030362795822297109/{result[3]}\n"
                 else:
-                    emb.description += f"~~<@{result[0]}> -- https://discord.com/channels/252552812427214849/1402736513543831583/{result[3]}~~\n"
+                    emb.description += f"~~<@{result[0]}> -- https://discord.com/channels/252552812427214849/1030362795822297109/{result[3]}~~\n"
                 
             emb.set_author(name=f"Requested by {interaction.user}. Expired warns are not shown.")
             n = Pagination.compute_total_pages(len(results), L)
