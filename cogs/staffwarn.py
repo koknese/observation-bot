@@ -44,7 +44,7 @@ class Staffwarns(commands.Cog):
         description="Staff warns a user"
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    #@discord.app_commands.checks.has_any_role("Administrator")
+    @discord.app_commands.checks.has_any_role("Administrator")
     async def warn(self, interaction: discord.Interaction, user: discord.Member, description: str, warn_type: Literal["Game staff", "Chat staff"]):
         unix_timestamp = int(time.time()) # horrible but works
         robloxUsername = await discordToRoblox(rover_token, server_id, user.id)
@@ -86,7 +86,7 @@ class Staffwarns(commands.Cog):
         description="lists a users warns"
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    #@discord.app_commands.checks.has_any_role("Administrator")
+    @discord.app_commands.checks.has_any_role("Administrator")
     async def viewarns(self, interaction: discord.Interaction, user: discord.Member, warn_type:Literal["Game staff", "Chat staff"]):
         conn = sqlite3.connect("data.db")
         unix_timestamp = int(time.time()) # horrible but works
