@@ -52,7 +52,7 @@ class Staffwarns(commands.Cog):
             separator1 = discord.ui.Separator()
             text1 = discord.ui.TextDisplay(f"# {f"<@{user.id}>" if warn_type == 'Chat staff' else f"<@{user.id}>" + f' ({robloxUsername["cachedUsername"]})'} has been warned")
             separator2 = discord.ui.Separator()
-            text2 = discord.ui.TextDisplay(f"{description}\n**{checkUserWarns(user.id, warn_type) + 1}/2**") # what a horrible workaround i hate this
+            text2 = discord.ui.TextDisplay(f"{description}\n**{checkUserWarns(user.id, warn_type)}/2**") # what a horrible workaround i hate this
             separator3 = discord.ui.Separator()
             text3 = discord.ui.TextDisplay(f"-# This is a {warn_type.lower()} only warn ")
         
@@ -62,7 +62,6 @@ class Staffwarns(commands.Cog):
 
         warnChannel = interaction.client.get_channel(1030362795822297109)
         await interaction.response.defer(ephemeral=True)
-        message = await warnChannel.send(view=my_view)
         conn = sqlite3.connect("data.db")
         c = conn.cursor()
         c.execute(f"""
@@ -79,6 +78,14 @@ class Staffwarns(commands.Cog):
         conn.commit()
         c.close()
         conn.close()
+        message = await warnChannel.send(view=my_view)
+        if checkUserWarns(user.id, warn_type) == 2:
+            if warn_type == "Game staff":
+                group = await client.get_group(2568175)
+                await group.set_rank(robloxUsername["robloxId"], 1)
+            # TODO: finish ts up, add chat staff probably
+
+
         await interaction.followup.send("Sent!")
 
     @app_commands.command(

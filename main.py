@@ -18,24 +18,30 @@ bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
 @tree.command(name="load", description="DEBUG: load a cog", guild=discord.Object(id=server_id))
-@discord.app_commands.checks.has_permissions(administrator=True)
+#@discord.app_commands.checks.has_permissions(administrator=True)
 async def load_cog(interaction: discord.Interaction, extension: str):
-    await bot.load_extension(f"cogs.{extension}")
-    await interaction.response.send_message(f"Cog '{extension}' loaded.")
-    await tree.sync(guild=discord.Object(id=server_id)) 
-    print(f"Cog '{extension}' has been loaded.")
+    if interaction.user.id == 432437043956809738:
+        await bot.load_extension(f"cogs.{extension}")
+        await interaction.response.send_message(f"Cog '{extension}' loaded.")
+        await tree.sync(guild=discord.Object(id=server_id)) 
+        print(f"Cog '{extension}' has been loaded.")
+    else:
+        await interaction.response.send_message(f"Not owner.")
 
 @tree.command(name="ping", description="DEBUG: ping", guild=discord.Object(id=server_id))
 async def ping(interaction: discord.Interaction):
     await interaction.response.send_message(f"Ponged back @ {bot.latency * 1000}ms", ephemeral=True)
     
 @tree.command(name="unload", description="DEBUG: unload a cog", guild=discord.Object(id=server_id))
-@discord.app_commands.checks.has_permissions(administrator=True)
+#@discord.app_commands.checks.has_permissions(administrator=True)
 async def load_cog(interaction: discord.Interaction, extension: str):
-    await bot.unload_extension(f"cogs.{extension}")
-    await interaction.response.send_message(f"Cog '{extension}' unloaded.")
-    await tree.sync(guild=discord.Object(id=server_id)) 
-    print(f"Cog '{extension}' has been unloaded.")
+    if interaction.user.id == 432437043956809738:
+        await bot.unload_extension(f"cogs.{extension}")
+        await interaction.response.send_message(f"Cog '{extension}' unloaded.")
+        await tree.sync(guild=discord.Object(id=server_id)) 
+        print(f"Cog '{extension}' has been unloaded.")
+    else:
+        await interaction.response.send_message(f"Not owner.")
     
 @tree.command(name="force-sync", description="DEBUG: forcesync", guild=discord.Object(id=server_id))
 @discord.app_commands.checks.has_permissions(administrator=True)
@@ -62,6 +68,12 @@ async def on_ready():
 
     await bot.load_extension("cogs.staffwarn")
     print("Staff warns cog loaded!")
+
+    await bot.load_extension("cogs.inactivity")
+    print("Inactivity cog loaded!")
+
+    await bot.load_extension("cogs.rolemanipulation")
+    print("role manipulations cog loaded!")
         
     await tree.sync(guild=discord.Object(id=server_id))  # Sync the commands after loading the cog
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"RU4 dev streams"))
