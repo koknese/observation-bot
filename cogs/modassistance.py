@@ -91,7 +91,7 @@ class Assistance(commands.Cog):
     async def close(self, interaction:discord.Interaction):
         if interaction.channel.__class__.__name__ == "Thread":
             if interaction.channel.parent.id == int(assistance_channel):
-                logging = interaction.client.get_channel(1402736513543831583)
+                logging = interaction.client.get_channel(1424621219533291550)
                 await interaction.response.send_message("Closing...")
                 await interaction.channel.starter_message.delete()
                 await interaction.channel.delete(reason="Closed")
