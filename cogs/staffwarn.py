@@ -107,7 +107,7 @@ class Staffwarns(commands.Cog):
         L = 10
         # sorted_result = sorted(results, key=lambda result: result[1], reverse=True) # results but the tuples are now sorted by the observation count
         async def get_page(page: int):
-            emb = discord.Embed(title=f"Staff warns for {user} ({checkUserWarns(user.id, warn_type)}/2)", description="")
+            emb = discord.Embed(title=f"{warn_type} warns for {user} ({checkUserWarns(user.id, warn_type)}/2)", description="")
             offset = (page-1) * L
             for result in results[offset:offset+L]:
                 if result[5] != 1:
@@ -153,9 +153,11 @@ class Staffwarns(commands.Cog):
 
         warnChannel = interaction.client.get_channel(1030362795822297109)
         message_id = int(message_id)
-        message = await warnChannel.fetch_message(message_id)
-        await message.reply(view=my_view)
-
+        try:
+            message = await warnChannel.fetch_message(message_id)
+            await message.reply(view=my_view)
+        except discord.errors.NotFound:
+            await warnChannel.send(view=my_view)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Staffwarns(bot), guild=discord.Object(id=server_id))
