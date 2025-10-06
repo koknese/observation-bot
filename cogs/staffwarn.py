@@ -54,7 +54,7 @@ class Staffwarns(commands.Cog):
             separator2 = discord.ui.Separator()
             text2 = discord.ui.TextDisplay(f"{description}\n**{checkUserWarns(user.id, warn_type) + 1}/2**") # what a horrible workaround i hate this
             separator3 = discord.ui.Separator()
-            text3 = discord.ui.TextDisplay(f"-# This is a {warn_type.lower()} only warn ")
+            text3 = discord.ui.TextDisplay(f"-# This is a {warn_type.lower()} only warn. Logged by <@{interaction.user.id}> ")
         
         my_view = discord.ui.LayoutView()
         cont = ObservationLayout(accent_colour=discord.Color.red())
@@ -138,6 +138,7 @@ class Staffwarns(commands.Cog):
             separator1 = discord.ui.Separator()
             text2 = discord.ui.TextDisplay(f"{reason}\n**{checkUserWarns(user.id, warn_type) - 1}/2**") # what a horrible workaround i hate this
             separator3 = discord.ui.Separator()
+            text3 = discord.ui.TextDisplay(f"-# Logged by <@{interaction.user.id}> ")
         
         conn = sqlite3.connect("data.db")
         c = conn.cursor()
