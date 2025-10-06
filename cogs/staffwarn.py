@@ -141,7 +141,7 @@ class Staffwarns(commands.Cog):
         
         conn = sqlite3.connect("data.db")
         c = conn.cursor()
-        c.execute(f"UPDATED warns SET appealed=1 WHERE message_id={message_id}")
+        c.execute(f"UPDATE warns SET appealed=1 WHERE message_id={message_id}")
         conn.commit()
         c.close()
         conn.close()
