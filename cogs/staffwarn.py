@@ -127,7 +127,7 @@ class Staffwarns(commands.Cog):
 
 
     @app_commands.command(
-        name="appeal",
+        name="appeal-sw",
         description="appeal a warn"
     )
     @app_commands.guilds(discord.Object(id=server_id))
