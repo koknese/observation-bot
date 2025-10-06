@@ -74,11 +74,11 @@ class Staffwarns(commands.Cog):
                 timestamp INT NOT NULL
                 ) 
               """)
+		message = await warnChannel.send(view=my_view)
         c.execute(f"INSERT INTO warns(warned_by, warned_user, warn_category, message_id, timestamp) VALUES (?, ?, ?, ?, ?)", (interaction.user.id, user.id, warn_type, message.id, unix_timestamp))
         conn.commit()
         c.close()
         conn.close()
-        message = await warnChannel.send(view=my_view)
         if checkUserWarns(user.id, warn_type) == 2:
             if warn_type == "Game staff":
                 group = await client.get_group(2568175)
