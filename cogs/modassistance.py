@@ -93,7 +93,7 @@ class Assistance(commands.Cog):
             if interaction.channel.parent.id == int(assistance_channel):
                 logging = interaction.client.get_channel(1424621219533291550)
                 await interaction.response.send_message("Closing...")
-                message = await interaction.channel.fetch_message(interaction.channel.id)
+                message = await interaction.channel.parent.fetch_message(interaction.channel.id)
                 await message.delete()
                 await interaction.channel.delete(reason="Closed")
                 await logging.send(f"{interaction.user} has closed a mod-assistance ticket.")
