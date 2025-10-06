@@ -74,7 +74,7 @@ class Staffwarns(commands.Cog):
                 timestamp INT NOT NULL
                 ) 
               """)
-		message = await warnChannel.send(view=my_view)
+        message = await warnChannel.send(view=my_view)
         c.execute(f"INSERT INTO warns(warned_by, warned_user, warn_category, message_id, timestamp) VALUES (?, ?, ?, ?, ?)", (interaction.user.id, user.id, warn_type, message.id, unix_timestamp))
         conn.commit()
         c.close()
