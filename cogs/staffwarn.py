@@ -52,7 +52,7 @@ class Staffwarns(commands.Cog):
             separator1 = discord.ui.Separator()
             text1 = discord.ui.TextDisplay(f"# {f"<@{user.id}>" if warn_type == 'Chat staff' else f"<@{user.id}>" + f' ({robloxUsername["cachedUsername"]})'} has been warned")
             separator2 = discord.ui.Separator()
-            text2 = discord.ui.TextDisplay(f"{description}\n**{checkUserWarns(user.id, warn_type)}/2**") # what a horrible workaround i hate this
+            text2 = discord.ui.TextDisplay(f"{description}\n**{checkUserWarns(user.id, warn_type) + 1}/2**") # what a horrible workaround i hate this
             separator3 = discord.ui.Separator()
             text3 = discord.ui.TextDisplay(f"-# This is a {warn_type.lower()} only warn ")
         
