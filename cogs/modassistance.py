@@ -88,7 +88,7 @@ class Assistance(commands.Cog):
     )
     @discord.app_commands.checks.has_any_role("Contractor", "Game Staff", "Developer")
     @app_commands.guilds(discord.Object(id=server_id))
-    async def close(self, interaction:discord.Interaction):
+    async def close(self, interaction:discord.Interaction, reason:str):
         if interaction.channel.__class__.__name__ == "Thread":
             if interaction.channel.parent.id == int(assistance_channel):
                 logging = interaction.client.get_channel(1424621219533291550)
@@ -96,7 +96,7 @@ class Assistance(commands.Cog):
                 message = await interaction.channel.parent.fetch_message(interaction.channel.id)
                 await message.delete()
                 await interaction.channel.delete(reason="Closed")
-                await logging.send(f"{interaction.user} has closed a mod-assistance ticket.")
+                await logging.send(f"{interaction.user} has closed a mod-assistance ticket. Reason: `{reason}`")
             else:
                 await interaction.response.send_message("Not a mod-assistance ticket", ephemeral=True)
         else:
