@@ -7,6 +7,7 @@ from discord.ext import commands
 from datetime import datetime
 from dotenv import load_dotenv
 from typing import Literal  
+import calendar
 import os
 import time 
 import pprint
@@ -253,7 +254,7 @@ class Observation(commands.Cog):
                         shortDate = str(current_month) + "." + str(current_year)
                         unix_timestamp = str(int(time.time())) # horrible but works
 
-                        c.execute(f"INSERT INTO {tableName} (short_date, timestamp) VALUES (?, ?)", (shortDate, unix_timestamp))
+                        c.execute(f"INSERT INTO {tableName} (short_date, timestamp) VALUES (?, ?)", ("123", unix_timestamp))
                         conn.commit()
                         c.close()
                         conn.close()
@@ -277,22 +278,23 @@ class Observation(commands.Cog):
         description='View the amount of observations made by a specific staff member'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @discord.app_commands.checks.has_any_role(observation_access)
+    #@discord.app_commands.checks.has_any_role(observation_access)
     @app_commands.describe(ephemeral="Whether the output should be only seen by you or everyone in the channel")
     async def stats(self, interaction: discord.Interaction, user: discord.Member, ephemeral: bool):
         current_month = datetime.now().month
         current_year = datetime.now().year
         try:
-            shortDateNow = str(current_month) + "." + str(current_year)
-            shortDateLastMonth = str(current_month - 1) + "." + str(current_year)
+            shortDateNow = datetime.today().replace(day=1)
+            shortDateLastMonth = datetime(shortDateNow.year, shortDateNow.month - 1, 1)
+            lastDayLastMonth = shortDateLastMonth.replace(day=calendar.monthrange(shortDateLastMonth.year, shortDateLastMonth.month)[1])
             tableName = "o" + str(user.id)
             conn = sqlite3.connect('data.db')
             c = conn.cursor()
-
+            
             queries = [
-                f"SELECT COUNT (*) FROM {tableName} WHERE short_date = {shortDateNow}", # gets the obs for current month
-                f"SELECT COUNT (*) FROM {tableName} WHERE short_date = {shortDateLastMonth}", # gets the obs for last month
-                f"SELECT COUNT (*) FROM {tableName}" # gets the obs for all time
+                f"SELECT COUNT (*) FROM {tableName} WHERE timestamp >= {int(shortDateNow.timestamp())}", 
+                f"SELECT COUNT (*) FROM {tableName} WHERE timestamp >= {int(shortDateLastMonth.timestamp())} AND timestamp < {int(lastDayLastMonth.timestamp())}", 
+                f"SELECT COUNT (*) FROM {tableName}"
             ]
 
             def execute_many_selects(cursor, queries):
