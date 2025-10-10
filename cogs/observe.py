@@ -293,7 +293,7 @@ class Observation(commands.Cog):
             
             queries = [
                 f"SELECT COUNT (*) FROM {tableName} WHERE timestamp >= {int(shortDateNow.timestamp())}", 
-                f"SELECT COUNT (*) FROM {tableName} WHERE timestamp >= {int(shortDateLastMonth.timestamp())} AND timestamp < {int(lastDayLastMonth.timestamp())}", 
+                f"SELECT COUNT (*) FROM {tableName} WHERE timestamp < {int(shortDateLastMonth.timestamp())} AND timestamp < {int(lastDayLastMonth.timestamp())}", 
                 f"SELECT COUNT (*) FROM {tableName}"
             ]
 
