@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from typing import Literal  
 import calendar
 import os
+import asyncio
 import time 
 import pprint
 import discord
@@ -144,6 +145,13 @@ class Observation(commands.Cog):
         await interaction.response.defer(thinking=True, ephemeral=True)
         description = description.replace("\\n", "\n")
         
+        evidences = []
+        for evidence in [primary_evidence, evidence2, evidence3, evidence4, evidence5, evidence6, evidence7]:
+            if evidence:
+                link = await upload(imgbb_key, evidence.url)
+                link = link["data"]["display_url"]
+                evidences.append(link)
+
         def determineEmbedColor():
           if observation_type == "Positive":
             return discord.Color.green()
@@ -204,10 +212,9 @@ class Observation(commands.Cog):
             author_text = discord.ui.TextDisplay(f"- <@{interaction.user.id}>")
             if primary_evidence:
                 evidence_media = discord.ui.MediaGallery()
-            for evidence in [primary_evidence, evidence2, evidence3, evidence4, evidence5, evidence6, evidence7]:
+            for evidence in evidences:
                 if evidence:
-                    link = upload(imgbb_key, evidence.url)["data"]["display_url"]
-                    evidence_media.add_item(media=link)
+                    evidence_media.add_item(media=evidence)
 
             separator2 = discord.ui.Separator()
             dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{discord_id}", label="DMs"))
@@ -425,7 +432,7 @@ class Observation(commands.Cog):
     @app_commands.guilds(discord.Object(id=server_id))
     async def imgupload(self, interaction: discord.Interaction, image: discord.Attachment):
         await interaction.response.defer(thinking=True, ephemeral=True)
-        uploaded = upload(imgbb_key, image.url)
+        uploaded = await upload(imgbb_key, image.url)
         print(f"{interaction.user.id} has uploaded image with the link {uploaded["data"]["display_url"]}")
         await interaction.followup.send(f"`{uploaded["data"]["display_url"]}`\n-# Misuse will lead to harsh punishments. This action has been logged.", ephemeral=True)
 
