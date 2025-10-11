@@ -1,5 +1,4 @@
 from misc.rover import robloxToDiscord, discordToRoblox
-from misc.imgbb import upload
 from misc.paginator import Pagination
 from discord import app_commands, ui
 from discord.utils import get
