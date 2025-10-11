@@ -74,6 +74,7 @@ class Assistance(commands.Cog):
                 inline=False)
         embed.set_thumbnail(url=getHeadshot(userIdRover))
         embed.set_image(url=image.url if image else None)
+        embed.set_footer("/mod-assistance for mod-assistance")
 
         assistance_channel_parsed = interaction.client.get_channel(int(assistance_channel))
 

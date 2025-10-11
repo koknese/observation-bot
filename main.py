@@ -63,8 +63,8 @@ async def on_ready():
     await bot.load_extension("cogs.modassistance")
     print("Mod assistance cog loaded!")
 
-    await bot.load_extension("cogs.editbans")
-    print("Edit bans cog loaded!")
+    await bot.load_extension("cogs.reports")
+    print("Reports cog loaded!")
 
     await bot.load_extension("cogs.staffwarn")
     print("Staff warns cog loaded!")
@@ -73,10 +73,10 @@ async def on_ready():
     print("Inactivity cog loaded!")
 
     await bot.load_extension("cogs.rolemanipulation")
-    print("role manipulations cog loaded!")
+    print("Role manipulations cog loaded!")
         
     await tree.sync(guild=discord.Object(id=server_id))  # Sync the commands after loading the cog
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"RU4 dev streams"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"/report for reports"))
     print(discord.__version__)
 
 bot.run(token)
