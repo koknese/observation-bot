@@ -150,7 +150,7 @@ class Inactivity(commands.Cog):
     @discord.app_commands.checks.has_any_role("Game Staff")
     async def inactivity(self, interaction:discord.Interaction, start_date: str, end_date:str, reason:str):
         await interaction.response.defer(ephemeral=True)
-        channel = interaction.client.get_channel(1402736513543831583)
+        channel = interaction.client.get_channel(1389793502610849905)
         roverResponse = discordToRoblox(rover_token, server_id, interaction.user.id)
         response_data = await roverResponse 
         usernameRover = response_data["cachedUsername"]
