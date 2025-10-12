@@ -172,6 +172,7 @@ class Inactivity(commands.Cog):
         __import__('pprint').pprint(message.id)
         view = AcceptUi(start_date, end_date, interaction.user, reason, usernameRover, userIdRover, interaction, message)
         await message.edit(embed=embed,view=view)
+        await interaction.followup.send("Sent!")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Inactivity(bot), guild=discord.Object(id=server_id))
