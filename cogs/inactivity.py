@@ -91,7 +91,7 @@ def postEvent(api_key, app_id, title, description, start_date, end_date):
 
     if response.status_code == 200:
         r = response.json()
-        __import__('pprint').pprint(r.text)
+        __import__('pprint').pprint(response.text)
     else:
         print(f"postEvent:: {response.text}")
 
