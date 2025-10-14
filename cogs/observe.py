@@ -137,7 +137,7 @@ class Observation(commands.Cog):
     @app_commands.guilds(discord.Object(id=server_id))
     @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"", count_towards_quota="If false, this won't log into your observation stats.", primary_evidence="To add more images, you must have primary_evidence uploaded. This will also be seen in FC.")
     @discord.app_commands.checks.has_any_role(observation_access)
-    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, count_towards_quota: bool, primary_evidence: discord.Attachment = None, evidence2: discord.Attachment = None, evidence3: discord.Attachment = None, evidence4: discord.Attachment = None, evidence5: discord.Attachment = None, evidence6: discord.Attachment = None, evidence7: discord.Attachment = None,):
+    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, count_towards_quota: bool, primary_evidence: discord.Attachment , evidence2: discord.Attachment = None, evidence3: discord.Attachment = None, evidence4: discord.Attachment = None, evidence5: discord.Attachment = None, evidence6: discord.Attachment = None, evidence7: discord.Attachment = None,):
         if interaction.channel.id != logging_channel_id:
             await interaction.response.send_message(f"This is only available in <#{logging_channel_id}>", ephemeral=True)
             return
@@ -212,9 +212,9 @@ class Observation(commands.Cog):
             author_text = discord.ui.TextDisplay(f"- <@{interaction.user.id}>")
             if primary_evidence:
                 evidence_media = discord.ui.MediaGallery()
-            for evidence in evidences:
-                if evidence:
-                    evidence_media.add_item(media=evidence)
+                for evidence in evidences:
+                    if evidence:
+                        evidence_media.add_item(media=evidence)
 
             separator2 = discord.ui.Separator()
             dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{discord_id}", label="DMs"))
@@ -234,7 +234,7 @@ class Observation(commands.Cog):
                                         <strong>{observation_type}</strong>
                                     </span> 
                                     - Logged by {interaction.user} ({interaction.user.id}) 
-                                    {f'<a href={self.evidence_media.items[0].media.url}>(provided proof)</a>' if self.evidence_media.items[0].media.url is not None else ''}
+                                    {f'<a href={self.evidence_media.items[0].media.url}>(provided proof)</a>' if self.evidence_media.items and self.evidence_media.items[0].media.url else ''}
                                 </h2>
                                 
                                 <blockquote>
