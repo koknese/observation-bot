@@ -110,7 +110,7 @@ class Staffwarns(commands.Cog):
             emb = discord.Embed(title=f"{warn_type} warns for {user} ({checkUserWarns(user.id, warn_type)}/2)", description="")
             offset = (page-1) * L
             for result in results[offset:offset+L]:
-                if result[5] != 1:
+                if result[4] != 1:
                     emb.description += f"<@{result[0]}> -- https://discord.com/channels/252552812427214849/1030362795822297109/{result[3]}\n"
                 else:
                     emb.description += f"~~<@{result[0]}> -- https://discord.com/channels/252552812427214849/1030362795822297109/{result[3]}~~\n"
