@@ -339,8 +339,6 @@ class Observation(commands.Cog):
                     return tm_id
                 case "Moderator":
                     return mod_id
-                case "Senior Moderator":
-                    return sm_id
 
         roblox_username = roblox_username.strip()
         roblox_id = getUserId(roblox_username)
