@@ -20,7 +20,6 @@ fc_secret = os.getenv('API_SECRET')
 server_id = os.getenv('SERVER_ID')
 fc_api_key = os.getenv('API_KEY')
 ha_role = int(os.getenv('HA_ROLE'))
-timestamp = int(time.time() * 1000)
 hash_bytes = hmac.new(fc_secret.encode(), (fc_api_key + str(timestamp)).encode(), hashlib.sha1).digest()
 hash_string = hash_bytes.hex()
 
@@ -36,6 +35,7 @@ class Backup(GroupCog, group_name="backup", group_description="FC backups"):
     @app_commands.guilds(discord.Object(id=server_id))
     @app_commands.checks.has_permissions(administrator=True)
     async def create(self, interaction: discord.Interaction, fc_app_id: str):
+        timestamp = int(time.time() * 1000)
         params = {
             "api_key": fc_api_key,
             "hash": hash_string,
