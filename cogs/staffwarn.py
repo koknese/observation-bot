@@ -26,6 +26,17 @@ client = Client(roblosecurity)
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
+def getRankInGroup(userid):
+    if userid:
+        request = requests.get(f"https://groups.roblox.com/v1/users/{userid}/groups/roles")
+        response = json.loads(request.text)
+        for i in response["data"]:
+            if i["group"]["id"] == 2568175:
+                return i["role"]["name"]
+    else:
+        error = "User ID couldn't be found or user not in group."
+        return error
+
 def checkUserWarns(userId, warnCat):
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
@@ -83,7 +94,10 @@ class Staffwarns(commands.Cog):
             if warn_type == "Game staff":
                 group = await client.get_group(2568175)
                 await group.set_rank(robloxUsername["robloxId"], 1)
-            # TODO: finish ts up, add chat staff probably
+                demotion_logs = interaction.client.get_channel(1030362796774400040)
+                await demotion_logs.send(f"{robloxUsername["cachedUsername"]} (<@user.id>)\n{getRankInGroup(robloxUsername["robloxId"])} -> Participant\nReached 2/2 staff warnings.")
+            else:
+                pass
 
 
         await interaction.followup.send("Sent!")

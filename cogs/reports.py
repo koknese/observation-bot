@@ -18,8 +18,8 @@ intents.members = True
 
 load_dotenv()
 server_id = os.getenv('SERVER_ID')
-rover_token = os.getenv('ROVER_TOKEN')
-herokuapp_token = os.getenv("HEROKUAPP_KEY")
+rover_token = os.getenv('ROVER_KEY')
+herokuapp_token = os.getenv("HEROKUAPP_TOKEN")
 roblosecurity = os.getenv("ROBLOSECURITY")
 
 client = Client(roblosecurity)
@@ -69,8 +69,8 @@ async def postBan(user, reason, logsLink, expiresIn):
 class Reasonmodal(discord.ui.Modal, title='Reason'):
     def __init__(self, message, user, length):
         super().__init__()
-        self.user = user
         self.message = message 
+        self.user = user
         self.length = length
 
     body = ui.TextInput(label='Reason', placeholder="Griefing, nation ruining, powerplay, godplay, abusing !staffGodRolls", style=discord.TextStyle.long)
@@ -78,18 +78,20 @@ class Reasonmodal(discord.ui.Modal, title='Reason'):
         await interaction.response.defer(ephemeral=True)
         unix_timestamp = int(time.time()) # horrible but works
         ban = await postBan(self.user, self.body.value, f"https://discord.com/channels/252552812427214849/{interaction.channel.id}/{self.message.id}", unix_timestamp + self.length)
+        __import__('pprint').pprint(ban)
         if ban == 201:
-            await self.message.edit(content=f"{self.user} banned by <@{interaction.user.id}> for {unix_timestamp + self.length}", view=None)
             banlogs = interaction.client.get_channel(1030362800171786280)
-            await banlogs.send(f"{self.user}\n**Banned by**: {interaction.user} (<@{interaction.user.id}>)\n**Length**: until <t:{unix_timestamp + self.length}:f>\n**Reason**: {self.body.value}", embed=self.message.embeds[0])
+            roblox_username = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
+            await banlogs.send(f"{self.user}\n**Banned by**: {roblox_username["cachedUsername"]} (<@{interaction.user.id}>)\n**Length**: until <t:{unix_timestamp + self.length}:f>\n**Reason**: {self.body.value}", embed=self.message.embeds[0])
         else:
             await interaction.followup.send("Something has gone wrong. Does the user exist or is the user already banned?")
 
 class AcceptUi(discord.ui.View):
-    def __init__(self, message, user, *, timeout=None):
+    def __init__(self, message, user, originalInteraction, *, timeout=None):
         super().__init__(timeout=timeout)
-        self.user = user
         self.message = message 
+        self.user = user
+        self.originalInteraction = originalInteraction
 
     @discord.ui.button(label="Ignore",style=discord.ButtonStyle.gray)
     async def ignore(self, interaction:discord.Interaction,button:discord.ui.Button):
@@ -98,7 +100,8 @@ class AcceptUi(discord.ui.View):
         if role not in interaction.user.roles and role2 not in interaction.user.roles:
             await interaction.response.send_message("https://i.kym-cdn.com/photos/images/newsfeed/002/916/147/ec1.jpg", ephemeral=True)
             return
-        await interaction.response.send_message("Appeal ignored.")
+        await interaction.response.send_message(f"Appeal ignored by {interaction.user}.")
+        await self.message.edit(content=f"Ignored by <@{interaction.user.id}>", view=None)
 
     @discord.ui.button(label="3 days",style=discord.ButtonStyle.primary)
     async def three_days(self, interaction:discord.Interaction,button:discord.ui.Button):
@@ -107,7 +110,9 @@ class AcceptUi(discord.ui.View):
         if role not in interaction.user.roles and role2 not in interaction.user.roles:
             await interaction.response.send_message("https://i.kym-cdn.com/photos/images/newsfeed/002/916/147/ec1.jpg", ephemeral=True)
             return
-        await interaction.response.send_modal(Reasonmodal(self.user, self.message, 259200))
+        await interaction.response.send_modal(Reasonmodal(self.message, self.user, 259200))
+        await self.message.edit(view=None)
+        await self.message.edit(content=f"Banned for 3 days by <@{interaction.user.id}>", view=None)
 
     @discord.ui.button(label="7 days",style=discord.ButtonStyle.primary)
     async def week(self, interaction:discord.Interaction,button:discord.ui.Button):
@@ -115,7 +120,8 @@ class AcceptUi(discord.ui.View):
         role2 = interaction.guild.get_role(admin)
         if role not in interaction.user.roles and role2 not in interaction.user.roles:
             return
-        await interaction.response.send_modal(Reasonmodal(self.user, self.message, 604800))
+        await interaction.response.send_modal(Reasonmodal(self.message, self.user, 604800))
+        await self.message.edit(content=f"Banned for 7 days by <@{interaction.user.id}>", view=None)
 
     @discord.ui.button(label="30 days",style=discord.ButtonStyle.primary)
     async def month(self, interaction:discord.Interaction,button:discord.ui.Button):
@@ -124,7 +130,8 @@ class AcceptUi(discord.ui.View):
         if role not in interaction.user.roles and role2 not in interaction.user.roles:
             await interaction.response.send_message("https://i.kym-cdn.com/photos/images/newsfeed/002/916/147/ec1.jpg", ephemeral=True)
             return
-        await interaction.response.send_modal(Reasonmodal(self.user, self.message, 2592000))
+        await interaction.response.send_modal(Reasonmodal(self.message, self.user, 2592000))
+        await self.message.edit(content=f"Banned for 30 days by <@{interaction.user.id}>", view=None)
 
     @discord.ui.button(label="6 months",style=discord.ButtonStyle.danger)
     async def half_a_year(self, interaction:discord.Interaction,button:discord.ui.Button):
@@ -133,7 +140,8 @@ class AcceptUi(discord.ui.View):
         if role not in interaction.user.roles and role2 not in interaction.user.roles:
             await interaction.response.send_message("https://i.kym-cdn.com/photos/images/newsfeed/002/916/147/ec1.jpg", ephemeral=True)
             return
-        await interaction.response.send_modal(Reasonmodal(self.user, self.message, 15638400))
+        await interaction.response.send_modal(Reasonmodal(self.message, self.user, 15638400))
+        await self.message.edit(content=f"Banned for 6 months by <@{interaction.user.id}>", view=None)
 
 class Reports(commands.Cog):
     def __init__(self, bot):
@@ -164,7 +172,7 @@ class Reports(commands.Cog):
         embed.set_image(url=image.url)
         reports = interaction.client.get_channel(1030362788620677170)
         message = await reports.send(embed=embed)
-        view = AcceptUi(user, message)
+        view = AcceptUi(message, user, interaction)
         await message.edit(embed=embed,view=view)
         await interaction.followup.send("Reported!")
 
