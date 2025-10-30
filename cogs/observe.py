@@ -286,7 +286,7 @@ class Observation(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"", primary_evidence="To add more images, you must have primary_evidence uploaded. This will also be seen in FC.")
-    @discord.app_commands.checks.has_any_role(1429128591836319837)
+    @discord.app_commands.checks.has_any_role(1030362797239967845)
     async def observeNew(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral"], description: str, primary_evidence: discord.Attachment , evidence2: discord.Attachment = None, evidence3: discord.Attachment = None, evidence4: discord.Attachment = None, evidence5: discord.Attachment = None, evidence6: discord.Attachment = None, evidence7: discord.Attachment = None,):
         await interaction.response.defer(thinking=True, ephemeral=True)
         description = description.replace("\\n", "\n")
@@ -387,7 +387,7 @@ class Observation(commands.Cog):
                                 {f"<h3>This observation contains extra evidence found in observation-logging.</h3>" if evidence2 is not None else ""}
                                 """.strip()
                     user_rank = getRankInGroup(roblox_id)
-                    if user_rank != "Trial Moderator" or "Gamemaster" or "Moderator":
+                    if user_rank != ("Trial Moderator" or "Gamemaster" or "Moderator"):
                         await interaction.followup.send("Cannot observe this user.")
                     postComment(getId(roblox_username, correctRankId(user_rank)), comment, fc_api_key, correctRankId(user_rank))
         
