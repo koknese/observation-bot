@@ -44,7 +44,7 @@ class PromotionMessage(ui.LayoutView):
         self.promotionText = ui.TextDisplay(finalString)
         self.separator = ui.Separator(visible=True)
         self.reasonText = ui.TextDisplay(reason)
-        self.promoter = ui.TextDisplay(f"-# Promoted by <@{user}>")
+        self.promoter = ui.TextDisplay(f"-# Rank changed by <@{user}>")
         container = ui.Container(
                 self.promotionText,
                 self.separator,
