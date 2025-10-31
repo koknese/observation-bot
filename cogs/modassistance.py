@@ -1,4 +1,6 @@
 import discord
+import io
+import chat_exporter
 import requests
 import sqlite3
 from misc.rover import discordToRoblox
@@ -95,9 +97,24 @@ class Assistance(commands.Cog):
                 logging = interaction.client.get_channel(1424621219533291550)
                 await interaction.response.send_message("Closing...")
                 message = await interaction.channel.parent.fetch_message(interaction.channel.id)
+                transcript = await chat_exporter.export(
+                    interaction.channel,
+                    limit=200,
+                    tz_info="UTC",
+                    military_time=True,
+                    bot=interaction.client,
+                )
+
+                if transcript is None:
+                    return
+
+                transcript_file = discord.File(
+                    io.BytesIO(transcript.encode()),
+                    filename=f"transcript-{interaction.channel.id}.html",
+                )
+                await logging.send(f"{interaction.user} has closed a mod-assistance ticket. Reason: `{reason}`", file=transcript_file)
                 await message.delete()
                 await interaction.channel.delete(reason="Closed")
-                await logging.send(f"{interaction.user} has closed a mod-assistance ticket. Reason: `{reason}`")
             else:
                 await interaction.response.send_message("Not a mod-assistance ticket", ephemeral=True)
         else:
