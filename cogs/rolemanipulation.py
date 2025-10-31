@@ -145,9 +145,11 @@ class Bulkmanipluate(discord.ui.Modal, title='Bulk manipulation'):
         # determining in which channel should we send the message via comparing the rank of the first user and the rank chosen
         # TODO: switch to actual channels
         if ranklist[self.rank] < ranklist[next(iter(manipulated))]:
-            await interaction.followup.send(view=PromotionMessage(finalString=finalString, user=interaction.user.id, reason=self.reason.value))
+            channel = interaction.client.get_channel(1030362797697159240)
+            await channel.send(view=PromotionMessage(finalString=finalString, user=interaction.user.id, reason=self.reason.value))
         else:
-            await interaction.followup.send(view=PromotionMessage(finalString=finalString, user=interaction.user.id, reason=self.reason.value))
+            channel = interaction.client.get_channel(1030362796774400040)
+            await channel.send(view=PromotionMessage(finalString=finalString, user=interaction.user.id, reason=self.reason.value))
         
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
@@ -165,15 +167,15 @@ class Rolemanipulations(commands.Cog):
     @app_commands.guilds(discord.Object(id=server_id))
     @discord.app_commands.checks.has_any_role("Administrator")
     async def changerank(self, interaction: discord.Interaction, user: discord.Member, rank:Literal[tuple(ranklist.keys())] , reason: str):
-        group = await client.get_group(2568175)
         await interaction.response.defer(ephemeral=True)
         loading = await interaction.followup.send("<a:loading:1424337544891338784> Calling Rover...", ephemeral=True)
-        userRank = getRankInGroup(userIdRover)
-        rankId = ranklist.get(rank)
-        roverResponse = discordToRoblox(rover_token, server_id, interaction.user.id)
+        roverResponse = discordToRoblox(rover_token, server_id, user.id)
         response_data = await roverResponse 
         usernameRover = response_data["cachedUsername"]
         userIdRover = response_data["robloxId"]
+        group = await client.get_group(2568175)
+        userRank = getRankInGroup(userIdRover)
+        rankId = ranklist.get(rank)
         await loading.edit(content="<a:loading:1424337544891338784> Determining manipulation type...")
         if userRank > rankId:
             await loading.edit(content="<a:loading:1424337544891338784> Determined as demotion...")
@@ -182,8 +184,9 @@ class Rolemanipulations(commands.Cog):
             await loading.edit(content="<a:loading:1424337544891338784> Determined as promotion...")
             channel = 1030362796774400040
         channel = interaction.client.get_channel(channel)
-        await group.set_rank(userid, ranklist[rank])
-        await channel.send(view=PromotionMessage(finalString=f"{usernameRover} (<@{user.id}>)\n**{ranklist.keys()[ranklist.values().index(userRank)]} --> {rank}**", user=interaction.user.id, reason=reason))
+        await group.set_rank(userIdRover, ranklist[rank])
+        keys = [key for key, val in ranklist.items() if val == userRank]
+        await channel.send(view=PromotionMessage(finalString=f"{usernameRover} (<@{user.id}>)\n**{keys[0]} --> {rank}**", user=interaction.user.id, reason=reason))
         await loading.edit(content=":white_check_mark: Rank changed!")
 
     @app_commands.command(
