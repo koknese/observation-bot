@@ -74,7 +74,7 @@ class PetitionMessage(ui.LayoutView):
         self.separator = ui.Separator(visible=True)
         self.section_text = ui.TextDisplay(f"{generateProgressBar(len(self.signees))} | **{len(self.signees)}/{signature_req}**")
         self.signatures = ui.Section(self.section_text, accessory=SignButton(self))
-        self.infoText = ui.TextDisplay(f"## <:admin:1434205708038967457> At 20 signatures...\nAt 20 signatures, this petition will be considered for debate in the administration\n-# Proposed by <@{user}>")
+        self.infoText = ui.TextDisplay(f"## <:admin:1434205708038967457> At {signature_req} signatures...\nAt {signature_req} signatures, this petition will be considered for debate in the administration\n-# Proposed by <@{user}>")
 
         container = ui.Container(
                 self.titleText,
