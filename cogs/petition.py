@@ -11,7 +11,7 @@ import discord
 import random
 import string
 
-signature_req = 15
+signature_req = 20
 
 intents = discord.Intents.all()
 intents.members = True
@@ -61,7 +61,7 @@ class SignButton(discord.ui.Button):
                 self.__view.section_text.content = f"{generateProgressBar(len(self.__view.signees))} | **{len(self.__view.signees)}/{signature_req}**" 
                 await interaction.response.edit_message(view=self.__view)
                 self.__view.infoText.content = f"## <:admin:1434205708038967457> <@&1030362811215384606>s,a petition was qualified for your consideration."
-                channel = interaction.client.get_channel(1434248583946965213)
+                channel = interaction.client.get_channel(1249828978953293936)
                 await channel.send(view=self.__view)
             else:
                 self.__view.section_text.content = f"{generateProgressBar(len(self.__view.signees))} | **{len(self.__view.signees)}/{signature_req}**" 
