@@ -50,7 +50,9 @@ class SignButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction) -> None:
         # if user not in signees array, get count element and add 1 and edit message with new view
         if interaction.user.id in self.__view.signees:
-            await interaction.response.send_message("You have already signed this petition", ephemeral=True)
+            self.__view.signees.remove(interaction.user.id)
+            self.__view.section_text.content = f"{generateProgressBar(len(self.__view.signees))} | **{len(self.__view.signees)}/{signature_req}**" 
+            await interaction.response.edit_message(view=self.__view)
         else:
             self.__view.signees.append(interaction.user.id)
             if len(self.__view.signees) == signature_req:
