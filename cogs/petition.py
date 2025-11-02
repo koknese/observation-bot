@@ -96,6 +96,7 @@ class Petitions(commands.Cog):
         name="petition",
         description="Make a staff petition"
     )
+    @app_commands.checks.cooldown(1,86400)
     @app_commands.guilds(discord.Object(id=server_id))
     @discord.app_commands.checks.has_any_role("Game Staff")
     async def petition(self, interaction: discord.Interaction, title: str, description: str):
