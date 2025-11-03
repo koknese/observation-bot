@@ -20,7 +20,8 @@ intents.members = True
 ID_API_ENDPOINT = "https://users.roblox.com/v1/usernames/users"
 load_dotenv("../.env")
 server_id = os.getenv('SERVER_ID')
-assistance_channel = os.getenv('ASSISTANCE_CHANNEL')
+assistance_channel = int(os.getenv('ASSISTANCE_CHANNEL'))
+assistance_channel_logs = int(os.getenv('ASSISTANCE_CHANNEL_LOGS'))
 rover_token = os.getenv('ROVER_KEY')
 game_staff_role = os.getenv("GS_ROLE")
 # converts username to user headshot
@@ -94,7 +95,7 @@ class Assistance(commands.Cog):
     async def close(self, interaction:discord.Interaction, reason:str):
         if interaction.channel.__class__.__name__ == "Thread":
             if interaction.channel.parent.id == int(assistance_channel):
-                logging = interaction.client.get_channel(1424621219533291550)
+                logging = interaction.client.get_channel(assistance_channel_logs)
                 await interaction.response.send_message("Closing...")
                 message = await interaction.channel.parent.fetch_message(interaction.channel.id)
                 transcript = await chat_exporter.export(

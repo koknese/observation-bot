@@ -29,6 +29,7 @@ fc_secret = os.getenv('API_SECRET')
 rover_token = os.getenv('ROVER_KEY')
 fc_api_key = os.getenv('API_KEY')
 logging_channel_id = int(os.getenv("LOGGING_CHANNEL"))
+smchive_logging = int(os.getenv("SMCHIVE_LOGGING"))
 imgbb_key = os.getenv("IMGBB_KEY")
 deletion_log = int(os.getenv("DELETION_LOGS"))
 
@@ -409,8 +410,7 @@ class Observation(commands.Cog):
                     conn.commit()
                     c.close()
                     conn.close()
-                    logging_channel_parsed = interaction.client.get_channel(1429128366887403702)
-
+                    logging_channel_parsed = interaction.client.get_channel(smchive_logging)
                     await logging_channel_parsed.send(view=self.view)
                     await interaction.followup.send(f"Observation accepted by {interaction.user}", ephemeral=True)
                 except Exception as e:

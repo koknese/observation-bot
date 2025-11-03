@@ -22,6 +22,9 @@ server_id = os.getenv('SERVER_ID')
 roblosecurity = os.getenv("ROBLOSECURITY")
 rover_token = os.getenv('ROVER_KEY')
 
+promotion_logs = int(os.getenv("PROMOTION_LOGS"))
+demotion_logs = int(os.getenv("DEMOTION_LOGS"))
+
 client = Client(roblosecurity)
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
@@ -145,10 +148,10 @@ class Bulkmanipluate(discord.ui.Modal, title='Bulk manipulation'):
         # determining in which channel should we send the message via comparing the rank of the first user and the rank chosen
         # TODO: switch to actual channels
         if ranklist[self.rank] < ranklist[next(iter(manipulated))]:
-            channel = interaction.client.get_channel(1030362797697159240)
+            channel = interaction.client.get_channel(demotion_logs)
             await channel.send(view=PromotionMessage(finalString=finalString, user=interaction.user.id, reason=self.reason.value))
         else:
-            channel = interaction.client.get_channel(1030362796774400040)
+            channel = interaction.client.get_channel(promotion_logs)
             await channel.send(view=PromotionMessage(finalString=finalString, user=interaction.user.id, reason=self.reason.value))
         
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
@@ -179,10 +182,10 @@ class Rolemanipulations(commands.Cog):
         await loading.edit(content="<a:loading:1424337544891338784> Determining manipulation type...")
         if userRank > rankId:
             await loading.edit(content="<a:loading:1424337544891338784> Determined as demotion...")
-            channel = 1030362797697159240
+            channel = demotion_logs
         else:
             await loading.edit(content="<a:loading:1424337544891338784> Determined as promotion...")
-            channel = 1030362796774400040
+            channel = promotion_logs
         channel = interaction.client.get_channel(channel)
         await group.set_rank(userIdRover, ranklist[rank])
         keys = [key for key, val in ranklist.items() if val == userRank]

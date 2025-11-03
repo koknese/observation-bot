@@ -25,9 +25,7 @@ server_id = os.getenv('SERVER_ID')
 fc_secret = os.getenv('API_SECRET')
 rover_token = os.getenv('ROVER_KEY')
 fc_api_key = os.getenv('API_KEY')
-logging_channel_id = int(os.getenv("LOGGING_CHANNEL"))
-imgbb_key = os.getenv("IMGBB_KEY")
-deletion_log = int(os.getenv("DELETION_LOGS"))
+inactivity_channel = int(os.getenv("INACTIVITY_CHANNEL"))
 
 mod_id = os.getenv('MOD_ID')
 sm_id = os.getenv('SM_ID')
@@ -35,7 +33,6 @@ gm_id = os.getenv('GM_ID')
 tm_id = os.getenv('TM_ID')
 
 observation_access = int(os.getenv('OBS_ROLE'))
-stats_access = int(os.getenv('HA_ROLE'))
 
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
@@ -150,7 +147,7 @@ class Inactivity(commands.Cog):
     @discord.app_commands.checks.has_any_role("Game Staff")
     async def inactivity(self, interaction:discord.Interaction, start_date: str, end_date:str, reason:str):
         await interaction.response.defer(ephemeral=True)
-        channel = interaction.client.get_channel(1389793502610849905)
+        channel = interaction.client.get_channel(inactivity_channel)
         roverResponse = discordToRoblox(rover_token, server_id, interaction.user.id)
         response_data = await roverResponse 
         usernameRover = response_data["cachedUsername"]

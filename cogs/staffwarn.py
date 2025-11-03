@@ -21,6 +21,8 @@ load_dotenv()
 server_id = os.getenv('SERVER_ID')
 roblosecurity = os.getenv("ROBLOSECURITY")
 rover_token = os.getenv('ROVER_KEY')
+staffwarn_channel = int(os.getenv("STAFFWARN_CHANNEL"))
+demotion_logs = int(os.getenv("DEMOTION_LOGS"))
 
 client = Client(roblosecurity)
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
@@ -71,7 +73,7 @@ class Staffwarns(commands.Cog):
         cont = ObservationLayout(accent_colour=discord.Color.red())
         my_view.add_item(cont)
 
-        warnChannel = interaction.client.get_channel(1030362795822297109)
+        warnChannel = interaction.client.get_channel(staffwarn_channel)
         await interaction.response.defer(ephemeral=True)
         conn = sqlite3.connect("data.db")
         c = conn.cursor()
@@ -94,8 +96,8 @@ class Staffwarns(commands.Cog):
             if warn_type == "Game staff":
                 group = await client.get_group(2568175)
                 await group.set_rank(robloxUsername["robloxId"], 1)
-                demotion_logs = interaction.client.get_channel(1030362796774400040)
-                await demotion_logs.send(f"{robloxUsername["cachedUsername"]} (<@user.id>)\n{getRankInGroup(robloxUsername["robloxId"])} -> Participant\nReached 2/2 staff warnings.")
+                demotion_channel = interaction.client.get_channel(demotion_logs)
+                await demotion_channel.send(f"{robloxUsername["cachedUsername"]} (<@user.id>)\n{getRankInGroup(robloxUsername["robloxId"])} -> Participant\nReached 2/2 staff warnings.")
             else:
                 pass
 

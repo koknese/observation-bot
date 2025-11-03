@@ -21,12 +21,14 @@ server_id = os.getenv('SERVER_ID')
 rover_token = os.getenv('ROVER_KEY')
 herokuapp_token = os.getenv("HEROKUAPP_TOKEN")
 roblosecurity = os.getenv("ROBLOSECURITY")
+banishment_logs = os.getenv("BANISHMENT_LOGS")
+admin = os.getenv("OBS_ROLE")
+senior_mod = os.getenv("SM_ROLE")
+reports_channel = int(os.getenv("REPORTS_CHANNEL"))
 
 client = Client(roblosecurity)
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
-senior_mod = 1030362797239967845
-admin = 1030362811215384606
 
 def getUserId(username):
     requestPayload = {
@@ -80,7 +82,7 @@ class Reasonmodal(discord.ui.Modal, title='Reason'):
         ban = await postBan(self.user, self.body.value, f"https://discord.com/channels/252552812427214849/{interaction.channel.id}/{self.message.id}", unix_timestamp + self.length)
         __import__('pprint').pprint(ban)
         if ban == 201:
-            banlogs = interaction.client.get_channel(1030362800171786280)
+            banlogs = interaction.client.get_channel(banishment_logs)
             roblox_username = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
             await banlogs.send(f"{self.user}\n**Banned by**: {roblox_username["cachedUsername"]} (<@{interaction.user.id}>)\n**Length**: until <t:{unix_timestamp + self.length}:f>\n**Reason**: {self.body.value}", embed=self.message.embeds[0])
         else:
@@ -170,7 +172,7 @@ class Reports(commands.Cog):
                         inline=False)
         
         embed.set_image(url=image.url)
-        reports = interaction.client.get_channel(1030362788620677170)
+        reports = interaction.client.get_channel(reports_channel)
         message = await reports.send(embed=embed)
         view = AcceptUi(message, user, interaction)
         await message.edit(embed=embed,view=view)

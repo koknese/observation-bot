@@ -18,6 +18,8 @@ intents.members = True
 
 load_dotenv()
 server_id = os.getenv('SERVER_ID')
+petition_channel = int(os.getenv('PETITION_CHANNEL'))
+petition_channel_admin = int(os.getenv('PETITION_CHANNEL_ADMIN'))
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
@@ -61,7 +63,7 @@ class SignButton(discord.ui.Button):
                 self.__view.section_text.content = f"{generateProgressBar(len(self.__view.signees))} | **{len(self.__view.signees)}/{signature_req}**" 
                 await interaction.response.edit_message(view=self.__view)
                 self.__view.infoText.content = f"## <:admin:1434205708038967457> <@&1030362811215384606>s, a petition was qualified for your consideration."
-                channel = interaction.client.get_channel(1249828978953293936)
+                channel = interaction.client.get_channel(petition_channel_admin)
                 await channel.send(view=self.__view)
             else:
                 self.__view.section_text.content = f"{generateProgressBar(len(self.__view.signees))} | **{len(self.__view.signees)}/{signature_req}**" 
@@ -102,7 +104,7 @@ class Petitions(commands.Cog):
     @app_commands.guilds(discord.Object(id=server_id))
     @discord.app_commands.checks.has_any_role("Game Staff")
     async def petition(self, interaction: discord.Interaction, title: str, description: str):
-        channel = interaction.client.get_channel(1434249236345782303)
+        channel = interaction.client.get_channel(petition_channel)
         message = await channel.send(view=PetitionMessage(title=title, description=description, user=interaction.user.id))
         await message.create_thread(name=title)
         await interaction.response.send_message("Your petition has been made.", ephemeral=True)
