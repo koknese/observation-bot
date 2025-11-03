@@ -105,7 +105,7 @@ class Petitions(commands.Cog):
         channel = interaction.client.get_channel(1434249236345782303)
         message = await channel.send(view=PetitionMessage(title=title, description=description, user=interaction.user.id))
         await message.create_thread(name=title)
-        await interaction.response.send_message("Your petition has been made.")
+        await interaction.response.send_message("Your petition has been made.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Petitions(bot), guild=discord.Object(id=server_id))
