@@ -150,7 +150,7 @@ class Observation(commands.Cog):
         for evidence in [primary_evidence, evidence2, evidence3, evidence4, evidence5, evidence6, evidence7]:
             if evidence:
                 link = await upload(imgbb_key, evidence.url)
-                link = link["data"]["display_url"]
+                link = link["data"]["url"]
                 evidences.append(link)
 
         def determineEmbedColor():
@@ -296,7 +296,7 @@ class Observation(commands.Cog):
         for evidence in [primary_evidence, evidence2, evidence3, evidence4, evidence5, evidence6, evidence7]:
             if evidence:
                 link = await upload(imgbb_key, evidence.url)
-                link = link["data"]["display_url"]
+                link = link["data"]["url"]
                 evidences.append(link)
 
         def determineEmbedColor():
@@ -578,8 +578,8 @@ class Observation(commands.Cog):
     async def imgupload(self, interaction: discord.Interaction, image: discord.Attachment):
         await interaction.response.defer(thinking=True, ephemeral=True)
         uploaded = await upload(imgbb_key, image.url)
-        print(f"{interaction.user.id} has uploaded image with the link {uploaded["data"]["display_url"]}")
-        await interaction.followup.send(f"`{uploaded["data"]["display_url"]}`\n-# Misuse will lead to harsh punishments. This action has been logged.", ephemeral=True)
+        print(f"{interaction.user.id} has uploaded image with the link {uploaded["data"]["url"]}")
+        await interaction.followup.send(f"`{uploaded["data"]["url"]}`\n-# Misuse will lead to harsh punishments. This action has been logged.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Observation(bot), guild=discord.Object(id=server_id))
