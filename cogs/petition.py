@@ -102,7 +102,7 @@ class Petitions(commands.Cog):
     )
     @app_commands.checks.cooldown(1,86400)
     @app_commands.guilds(discord.Object(id=server_id))
-    @discord.app_commands.checks.has_any_role("Game Staff")
+    @discord.app_commands.checks.has_any_role("Game Staff", "Respected Peer", "Retired Staff")
     async def petition(self, interaction: discord.Interaction, title: str, description: str):
         channel = interaction.client.get_channel(petition_channel)
         message = await channel.send(view=PetitionMessage(title=title, description=description, user=interaction.user.id))
