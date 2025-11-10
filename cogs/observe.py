@@ -203,7 +203,7 @@ class Observation(commands.Cog):
         user_rank = getRankInGroup(roblox_id)
         fc_task_id = getId(roblox_username, correctRankId(user_rank))
         if fc_task_id == None:
-            await interaction.followup.send(f"No task for user `${roblox_username}` was found")
+            await interaction.followup.send(f"No task for user `${roblox_username}` was found", ephemeral=True)
 
         class ObservationLayout(discord.ui.Container):
             mediagallery = discord.ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png"))
