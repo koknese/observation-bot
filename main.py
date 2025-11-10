@@ -18,7 +18,6 @@ bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
 @tree.command(name="load", description="DEBUG: load a cog", guild=discord.Object(id=server_id))
-#@discord.app_commands.checks.has_permissions(administrator=True)
 async def load_cog(interaction: discord.Interaction, extension: str):
     if interaction.user.id == 432437043956809738:
         await bot.load_extension(f"cogs.{extension}")
@@ -33,31 +32,24 @@ async def ping(interaction: discord.Interaction):
     await interaction.response.send_message(f"Ponged back @ {bot.latency * 1000}ms", ephemeral=True)
     
 @tree.command(name="unload", description="DEBUG: unload a cog", guild=discord.Object(id=server_id))
-#@discord.app_commands.checks.has_permissions(administrator=True)
 async def load_cog(interaction: discord.Interaction, extension: str):
     if interaction.user.id == 432437043956809738:
         await bot.unload_extension(f"cogs.{extension}")
-        await interaction.response.send_message(f"Cog '{extension}' unloaded.")
-        await tree.sync(guild=discord.Object(id=server_id)) 
-        print(f"Cog '{extension}' has been unloaded.")
+        await interaction.response.send_message(f"cog '{extension}' unloaded.")
+        await tree.sync(guild=discord.object(id=server_id)) 
+        print(f"cog '{extension}' has been unloaded.")
     else:
-        await interaction.response.send_message(f"Not owner.")
+        await interaction.response.send_message(f"not owner.")
 
-@tree.command(name="nuke", description="RiskordNuker1000", guild=discord.Object(id=server_id))
-#@discord.app_commands.checks.has_permissions(administrator=True)
-async def load_cog(interaction: discord.Interaction):
-    if interaction.user.id == 432437043956809738:
-        await interaction.response.send_message("✅ Nuker rigged to set off <t:1761421140:R>")
-    else:
-        await interaction.response.send_message("Not owner")
-    
-    
 @tree.command(name="force-sync", description="DEBUG: forcesync", guild=discord.Object(id=server_id))
 @discord.app_commands.checks.has_permissions(administrator=True)
 async def forcesync(interaction: discord.Interaction):
-    await interaction.response.send_message("Force sync...")
-    await tree.sync(guild=discord.Object(id=server_id)) 
-    print(f"FORCE SYNC.")
+    if interaction.user.id == 432437043956809738:
+        await interaction.response.send_message("Force sync...")
+        await tree.sync(guild=discord.Object(id=server_id))
+        print(f"FORCE SYNC.")
+    else:
+        await interaction.response.send_message(f"not owner.")
 
 @bot.event
 async def on_ready():
