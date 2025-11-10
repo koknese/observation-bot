@@ -45,21 +45,24 @@ bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
 def getUserId(username, interaction = None):
-    requestPayload = {
-            "usernames": [
-                username
-            ],
-            "excludeBannedUsers": True # Whether to include banned users within the request, change this as you wish
-           }
-        
-    responseData = requests.post(ID_API_ENDPOINT, json=requestPayload)
-        
-    assert responseData.status_code == 200
-        
-    userId = responseData.json()["data"][0]["id"]
-        
-    print(f"getUserId :: Fetched user ID of username {username} -> {userId}")
-    return userId
+    try:
+        requestPayload = {
+                "usernames": [
+                    username
+                ],
+                "excludeBannedUsers": True # Whether to include banned users within the request, change this as you wish
+               }
+            
+        responseData = requests.post(ID_API_ENDPOINT, json=requestPayload)
+            
+        assert responseData.status_code == 200
+            
+        userId = responseData.json()["data"][0]["id"]
+            
+        print(f"getUserId :: Fetched user ID of username {username} -> {userId}")
+        return userId
+    except Exception as e:
+        return None
 
 def getRankInGroup(userid):
     if userid:
@@ -195,6 +198,8 @@ class Observation(commands.Cog):
 
         roblox_username = roblox_username.strip()
         roblox_id = getUserId(roblox_username)
+        if roblox_id == None:
+            await interaction.followup.send(f"No Roblox user `${roblox_username}` was found", ephemeral=True)
         current_month = datetime.now().month
         current_year = datetime.now().year
 
