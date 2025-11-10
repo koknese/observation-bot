@@ -14,7 +14,6 @@ import json
 import hmac
 import hashlib
 import requests
-import sqlite3
 
 intents = discord.Intents.all()
 intents.members = True

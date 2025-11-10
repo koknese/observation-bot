@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from typing import Literal  
 import os
 import time 
-import pprint
 import discord
 import random
 import string
