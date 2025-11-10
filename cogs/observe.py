@@ -227,7 +227,7 @@ class Observation(commands.Cog):
             separator2 = discord.ui.Separator()
             dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{discord_id}", label="DMs"))
             roblox_section = discord.ui.Section(ui.TextDisplay("User's ROBLOX profile"), accessory=discord.ui.Button(url=f"https://roblox.com/users/{roblox_id}/profile", label="ROBLOX"))
-            task_section = discord.ui.Section(ui.TextDisplay("User's Freedcamp task"), accessory=discord.ui.Button(url=f"https://freedcamp.com/view/{correctRankId(user_rank)/tasks/panel/task/{fc_task_id}}", label="Freedcamp task"))
+            task_section = discord.ui.Section(ui.TextDisplay("User's Freedcamp task"), accessory=discord.ui.Button(url=f"https://freedcamp.com/view/{correctRankId(user_rank)}/tasks/panel/task/{fc_task_id}}", label="Freedcamp task"))
             text3 = discord.ui.TextDisplay(f"-# Observation counted towards quota: **{count_towards_quota}**")
             preview_warning = discord.ui.TextDisplay("This is a preview. Verify all information before accepting changes.")
             action_row = discord.ui.ActionRow()
