@@ -139,10 +139,6 @@ class Observation(commands.Cog):
     @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"", count_towards_quota="If false, this won't log into your observation stats.", primary_evidence="To add more images, you must have primary_evidence uploaded. This will also be seen in FC.")
     @discord.app_commands.checks.has_any_role(observation_access)
     async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, count_towards_quota: bool, primary_evidence: discord.Attachment , evidence2: discord.Attachment = None, evidence3: discord.Attachment = None, evidence4: discord.Attachment = None, evidence5: discord.Attachment = None, evidence6: discord.Attachment = None, evidence7: discord.Attachment = None,):
-        if interaction.channel.id != logging_channel_id:
-            await interaction.response.send_message(f"This is only available in <#{logging_channel_id}>", ephemeral=True)
-            return
-        
         await interaction.response.defer(thinking=True, ephemeral=True)
         description = description.replace("\\n", "\n")
         
@@ -204,6 +200,10 @@ class Observation(commands.Cog):
 
         response = await robloxToDiscord(rover_token, server_id, roblox_id)
         discord_id = response['discordUsers'][0]['user']['id']
+        user_rank = getRankInGroup(roblox_id)
+        fc_task_id = getId(roblox_username, correctRankId(user_rank))
+        if fc_task_id == None:
+            await interaction.followup.send(f"No task for user `${roblox_username}` was found")
 
         class ObservationLayout(discord.ui.Container):
             mediagallery = discord.ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png"))
@@ -243,8 +243,7 @@ class Observation(commands.Cog):
                                 </blockquote>
                                 {f"<h3>This observation contains extra evidence found in observation-logging.</h3>" if evidence2 is not None else ""}
                                 """.strip()
-                    user_rank = getRankInGroup(roblox_id)
-                    postComment(getId(roblox_username, correctRankId(user_rank)), comment, fc_api_key, correctRankId(user_rank))
+                    postComment(fc_task_id, comment, fc_api_key, correctRankId(user_rank))
         
                     self.remove_item(self.preview_warning)
                     self.remove_item(self.action_row)
