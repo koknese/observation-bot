@@ -13,6 +13,7 @@ import pprint
 import discord
 import json
 import sqlite3
+import requests
 
 intents = discord.Intents.all()
 intents.members = True
