@@ -62,6 +62,7 @@ class Senator(commands.Cog):
     async def petition(self, interaction: discord.Interaction, slogan:str, description: str, time_in_risk:str, image:discord.Attachment = None):
         channel = interaction.client.get_channel(1402736513543831583)
         roverResponse = discordToRoblox(rover_token, server_id, interaction.user.id)
+        image = image if image else None # ???
         response_data = await roverResponse 
         userIdRover = response_data["robloxId"]
         usernameRover = response_data["cachedUsername"]
