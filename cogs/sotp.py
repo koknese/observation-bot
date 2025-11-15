@@ -28,7 +28,7 @@ class CampaignMessage(ui.LayoutView):
         self.banner = ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png")) # setting the interaction user as the only signee at the given moment
         self.titleText = ui.TextDisplay(f"# <@{user}>'s bid for Senator")
         self.sloganText = ui.TextDisplay(f"### <@{user}>'s bid for Senator")
-        self.infoText = ui.Section(ui.TextDisplay(f"**Risk member for**: *{time_in_risk}*\n**Roblox username**: `{roblox_user}`"), accessory=1)
+        self.infoText = ui.Section(ui.TextDisplay(f"**Risk member for**: *{time_in_risk}*\n**Roblox username**: `{roblox_user}`"), accessory=self.thumbnail)
         self.descriptionText = ui.TextDisplay(description)
         self.gallery = ui.MediaGallery(discord.MediaGalleryItem(image)) if image else None # setting the interaction user as the only signee at the given moment
         self.separator = ui.Separator(visible=True)
