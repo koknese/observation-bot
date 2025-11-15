@@ -46,7 +46,7 @@ class CampaignMessage(ui.LayoutView):
         )
         self.add_item(container)
 
-class Petitions(commands.Cog):
+class Senator(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
@@ -67,4 +67,4 @@ class Petitions(commands.Cog):
         await interaction.response.send_message("Your bid has been made.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Petitions(bot), guild=discord.Object(id=server_id))
+    await bot.add_cog(Senator(bot), guild=discord.Object(id=server_id))
