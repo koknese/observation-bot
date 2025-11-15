@@ -17,6 +17,7 @@ intents.members = True
 
 load_dotenv()
 server_id = os.getenv('SERVER_ID')
+rover_token = os.getenv('ROVER_KEY')
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
