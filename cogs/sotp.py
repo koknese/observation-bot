@@ -62,11 +62,11 @@ class Senator(commands.Cog):
     async def petition(self, interaction: discord.Interaction, slogan:str, description: str, time_in_risk:str, image:discord.Attachment = None):
         channel = interaction.client.get_channel(1402736513543831583)
         roverResponse = discordToRoblox(rover_token, server_id, interaction.user.id)
-        image = image if image else None # ???
+        image = image.url if image else None # ???
         response_data = await roverResponse 
         userIdRover = response_data["robloxId"]
         usernameRover = response_data["cachedUsername"]
-        message = await channel.send(view=CampaignMessage(description=description, user=interaction.user.id, roblox_user=usernameRover, time_in_risk=time_in_risk, image=image.url, roblox_portrait=getHeadshot(userIdRover)))
+        message = await channel.send(view=CampaignMessage(description=description, user=interaction.user.id, roblox_user=usernameRover, time_in_risk=time_in_risk, image=image, roblox_portrait=getHeadshot(userIdRover)))
         await interaction.response.send_message("Your bid has been made.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
