@@ -66,6 +66,7 @@ class Senator(commands.Cog):
         userIdRover = response_data["robloxId"]
         usernameRover = response_data["cachedUsername"]
         message = await channel.send(view=CampaignMessage(description=description, user=interaction.user.id, roblox_user=usernameRover, time_in_risk=time_in_risk, image=image.url, roblox_portrait=getHeadshot(userIdRover), roblox_id=userIdRover, slogan=slogan))
+        thread = await message.create_thread(name=f"{usernameRover} for Senator", auto_archive_duration=60)
         await interaction.response.send_message("Your bid has been made.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
