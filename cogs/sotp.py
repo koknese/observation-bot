@@ -22,12 +22,12 @@ bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
 class CampaignMessage(ui.LayoutView):
-    def __init__(self, *, user:int, roblox_user:str, roblox_portrait:str, time_in_risk:str, description:str, roblox_id:int, image:str) -> None:
+    def __init__(self, *, user:int, roblox_user:str, roblox_portrait:str, time_in_risk:str, description:str, roblox_id:int, image:str, slogan:str) -> None:
         super().__init__(timeout=None)
         self.thumbnail = ui.Thumbnail(media=getHeadshot(roblox_id))
         self.banner = ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png")) # setting the interaction user as the only signee at the given moment
         self.titleText = ui.TextDisplay(f"# <@{user}>'s bid for Senator")
-        self.sloganText = ui.TextDisplay(f"### <@{user}>'s bid for Senator")
+        self.sloganText = ui.TextDisplay(f"### \"{slogan}\"")
         self.infoText = ui.Section(ui.TextDisplay(f"**Risk member for**: *{time_in_risk}*\n**Roblox username**: `{roblox_user}`"), accessory=self.thumbnail)
         self.descriptionText = ui.TextDisplay(description)
         self.gallery = ui.MediaGallery(discord.MediaGalleryItem(image)) if image else None # setting the interaction user as the only signee at the given moment
@@ -65,7 +65,7 @@ class Senator(commands.Cog):
         response_data = await roverResponse 
         userIdRover = response_data["robloxId"]
         usernameRover = response_data["cachedUsername"]
-        message = await channel.send(view=CampaignMessage(description=description, user=interaction.user.id, roblox_user=usernameRover, time_in_risk=time_in_risk, image=image.url, roblox_portrait=getHeadshot(userIdRover), roblox_id=userIdRover))
+        message = await channel.send(view=CampaignMessage(description=description, user=interaction.user.id, roblox_user=usernameRover, time_in_risk=time_in_risk, image=image.url, roblox_portrait=getHeadshot(userIdRover), roblox_id=userIdRover, slogan=slogan))
         await interaction.response.send_message("Your bid has been made.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
