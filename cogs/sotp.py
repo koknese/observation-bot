@@ -60,7 +60,7 @@ class Senator(commands.Cog):
     @app_commands.guilds(discord.Object(id=server_id))
     @discord.app_commands.checks.has_any_role("Participant", "Experienced Participant", "Trusted Participant")
     async def petition(self, interaction: discord.Interaction, slogan:str, description: str, time_in_risk:str, image:discord.Attachment):
-        channel = interaction.client.get_channel(1402736513543831583)
+        channel = interaction.client.get_channel(1417220148158267432)
         roverResponse = discordToRoblox(rover_token, server_id, interaction.user.id)
         response_data = await roverResponse 
         userIdRover = response_data["robloxId"]
