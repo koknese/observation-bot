@@ -38,7 +38,7 @@ class CampaignMessage(ui.LayoutView):
                 self.separator,
                 self.infoText,
                 self.separator,
-                self.sloganText
+                self.sloganText,
                 self.descriptionText,
                 self.separator,
                 self.gallery,
