@@ -22,7 +22,7 @@ bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
 class CampaignMessage(ui.LayoutView):
-    def __init__(self, *, user:int, roblox_user:str, roblox_portrait:str, time_in_risk:str, description:str, image:str = None) -> None:
+    def __init__(self, *, user:int, roblox_user:str, roblox_portrait:str, time_in_risk:str, description:str, roblox_id:int, image:str = None) -> None:
         super().__init__(timeout=None)
         self.thumbnail = ui.Thumbnail(media=getHeadshot(roblox_id))
         self.banner = ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png")) # setting the interaction user as the only signee at the given moment
@@ -66,7 +66,7 @@ class Senator(commands.Cog):
         response_data = await roverResponse 
         userIdRover = response_data["robloxId"]
         usernameRover = response_data["cachedUsername"]
-        message = await channel.send(view=CampaignMessage(description=description, user=interaction.user.id, roblox_user=usernameRover, time_in_risk=time_in_risk, image=image, roblox_portrait=getHeadshot(userIdRover)))
+        message = await channel.send(view=CampaignMessage(description=description, user=interaction.user.id, roblox_user=usernameRover, time_in_risk=time_in_risk, image=image, roblox_portrait=getHeadshot(userIdRover), roblox_id=userIdRover))
         await interaction.response.send_message("Your bid has been made.", ephemeral=True)
 
 async def setup(bot: commands.Bot):
