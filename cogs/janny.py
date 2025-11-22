@@ -59,6 +59,7 @@ def actionCountPast30d(user, action_type):
     conn.close()
 
 def getLastId():
+    # horrid solution!
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
     c.execute(f"SELECT seq FROM sqlite_sequence WHERE name='riskordlogs'")
@@ -71,8 +72,8 @@ def getLastId():
 def logAction(user, action_type):
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
-    c.execute(f"""CREATE TABLE IF NOT EXISTS riskordlogs(
-            case INTEGER PRIMARY KEY,
+    c.execute(f"""CREATE TABLE IF NOT EXISTS riskordlogs (
+            caseid INTEGER PRIMARY KEY,
             user INT NOT NULL,
             type TEXT NOT NULL,
             timestamp INT NOT NULL
