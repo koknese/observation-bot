@@ -17,7 +17,6 @@ server_id = os.getenv('SERVER_ID')
 punishment_logs = int(os.getenv('PUNISHMENT_LOGS'))
 staff_punishment_logs = int(os.getenv('STAFF_PUNISHMENT_LOGS'))
 
-
 def genericEmbed(caseid, action_type, author, target, reason):
     embed = discord.Embed(
         color=16038116,
@@ -98,12 +97,13 @@ class Janny(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def warn(self, interaction:discord.Interaction, user:discord.Member, reason:str):
-        punishment_logs = interaction.client.get_channel(punishment_logs)
+        punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
+        staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
         logAction(user, "warn")
         last_id = getLastId()
         embed = genericEmbed(last_id, "warn", interaction.user, user, reason)
-        await punishment_logs.send(embed=embed)
-        message = await staff_punishment_logs.send(embed=embed)
+        await punishment_logs_parsed.send(embed=embed)
+        message = await staff_punishment_logs_parsed.send(embed=embed)
         await message.create_thread(str(last_id))
         await interaction.response.send_message("Warned", ephemeral=True)
 
