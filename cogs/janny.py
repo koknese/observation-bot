@@ -98,13 +98,14 @@ class Janny(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def warn(self, interaction:discord.Interaction, user:discord.Member, reason:str):
-        punishment_logs = bot.get_channel(punishment_logs)
+        punishment_logs = interaction.client.get_channel(punishment_logs)
         logAction(user, "warn")
         last_id = getLastId()
         embed = genericEmbed(last_id, "warn", interaction.user, user, reason)
         await punishment_logs.send(embed=embed)
         message = await staff_punishment_logs.send(embed=embed)
         await message.create_thread(str(last_id))
+        await interaction.response.send_message("Warned", ephemeral=True)
 
     #@app_commands.command(
     #    name="mute",
