@@ -63,7 +63,7 @@ def getLastId():
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
     c.execute(f"SELECT seq FROM sqlite_sequence WHERE name='riskordlogs'")
-    count = c.fetchall()
+    count = c.fetchone()
     __import__('pprint').pprint(count)
     return count[0]
     c.close()
@@ -104,6 +104,7 @@ class Janny(commands.Cog):
         last_id = getLastId()
         embed = genericEmbed(last_id, "warn", interaction.user, user, reason)
         await punishment_logs_parsed.send(embed=embed)
+        await user.send(embed=embed)
         message = await staff_punishment_logs_parsed.send(embed=embed)
         await message.create_thread(str(last_id))
         await interaction.response.send_message("Warned", ephemeral=True)
