@@ -56,7 +56,7 @@ def genericEmbed(caseid, action_type, author, target, reason):
 def actionCountPast30d(user, action_type):
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
-    unix_timestamp = str(int(time.time())) # horrible but works
+    unix_timestamp = int(time.time()) # horrible but works
     c.execute(f"SELECT COUNT (*) FROM riskordlogs WHERE user={user.id} AND action_type={action_type} AND {unix_timestamp - 2592000} < timestamp < {unix_timestamp}") 
     count = c.fetchone()
     __import__('pprint').pprint(count)
