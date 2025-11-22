@@ -113,7 +113,7 @@ class Janny(commands.Cog):
         await punishment_logs_parsed.send(embed=embed)
         await user.send(embed=embed)
         message = await staff_punishment_logs_parsed.send(embed=embed)
-        await message.create_thread(name=f"Case {last_id}"))
+        await message.create_thread(name=f"Case {last_id}")
         await interaction.response.send_message("Warned", ephemeral=True)
 
     #@app_commands.command(
