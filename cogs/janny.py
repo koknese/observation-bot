@@ -24,28 +24,28 @@ def genericEmbed(caseid, action_type, author, target, reason):
         description="-# DM sent",
         timestamp=datetime.now(),
     )
-        .set_author(
-            name=f"Case {caseid} ({action_type})",
-            icon_url=f"https://github.com/allthingslinux/tux/blob/main/assets/emojis/{action_type}.png?raw=true", # we LOOOOOOOOOVE stealing assets <3
-        )
-        .set_footer(
-            text="janny@risky #",
-        )
-        .add_field(
-            name="Moderator",
-            value=f"-# **{author}** `{author.id}`",
-            inline=True,
-        )
-        .add_field(
-            name="Target",
-            value=f"-# **{target}** `{target.id}`",
-            inline=True,
-        )
-        .add_field(
-            name="Reason",
-            value=f"> -# {reason}",
-            inline=False,
-        )
+    .set_author(
+        name=f"Case {caseid} ({action_type})",
+        icon_url=f"https://github.com/allthingslinux/tux/blob/main/assets/emojis/{action_type}.png?raw=true", # we LOOOOOOOOOVE stealing assets <3
+    )
+    .set_footer(
+        text="janny@risky #",
+    )
+    .add_field(
+        name="Moderator",
+        value=f"-# **{author}** `{author.id}`",
+        inline=True,
+    )
+    .add_field(
+        name="Target",
+        value=f"-# **{target}** `{target.id}`",
+        inline=True,
+    )
+    .add_field(
+        name="Reason",
+        value=f"> -# {reason}",
+        inline=False,
+    )
     return embed
 
 def actionCountPast30d(user, action_type):
