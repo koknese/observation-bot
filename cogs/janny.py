@@ -106,17 +106,18 @@ class Janny(commands.Cog):
         message = await staff_punishment_logs.send(embed=embed)
         await message.create_thread(str(last_id))
 
-    @app_commands.command(
-        name="mute",
-        description="Warn a user"
-    )
-    @app_commands.guilds(discord.Object(id=server_id))
-    @app_commands.describe(proof="Image formats !!ONLY!!")
-    async def warn(self, interaction:discord.Interaction, user:discord.Member, reason:str, proof:discord.Attachment):
-        punishment_logs = bot.get_channel(punishment_logs)
-        logAction(user, "warn")
-        embed = genericEmbed(getLastId(), "warn", interaction.user, user, reason)
-        await punishment_logs.send(embed=embed)
-        await 
+    #@app_commands.command(
+    #    name="mute",
+    #    description="Warn a user"
+    #)
+    #@app_commands.guilds(discord.Object(id=server_id))
+    #@app_commands.describe(proof="Image formats !!ONLY!!")
+    #async def warn(self, interaction:discord.Interaction, user:discord.Member, reason:str, proof:discord.Attachment):
+    #    punishment_logs = bot.get_channel(punishment_logs)
+    #    logAction(user, "warn")
+    #    embed = genericEmbed(getLastId(), "warn", interaction.user, user, reason)
+    #    await punishment_logs.send(embed=embed)
+    #    await 
 
-
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Janny(bot), guild=discord.Object(id=server_id))
