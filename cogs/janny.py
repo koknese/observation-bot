@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from typing import Literal
 from datetime import datetime
 import os
-import datetime
 import time 
 
 intents = discord.Intents.all()
