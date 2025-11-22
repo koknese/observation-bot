@@ -63,7 +63,7 @@ def getLastId():
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
     c.execute(f"SELECT seq FROM sqlite_sequence WHERE name='riskordlogs'")
-    count = c.fetchone()
+    count = c.fetchall()
     __import__('pprint').pprint(count)
     return count[0]
     c.close()
@@ -73,7 +73,7 @@ def logAction(user, action_type):
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
     c.execute(f"""CREATE TABLE IF NOT EXISTS riskordlogs (
-            caseid INTEGER PRIMARY KEY,
+            caseid INTEGER PRIMARY KEY AUTOINCREMENT,
             user INT NOT NULL,
             type TEXT NOT NULL,
             timestamp INT NOT NULL
