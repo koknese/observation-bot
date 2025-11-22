@@ -5,7 +5,7 @@ from discord.utils import get
 from discord.ext import commands
 from dotenv import load_dotenv
 from typing import Literal
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import time 
 
@@ -59,7 +59,6 @@ def actionCountPast30d(user, action_type):
     unix_timestamp = int(time.time()) # horrible but works
     c.execute(f"SELECT COUNT (*) FROM riskordlogs WHERE user={user.id} AND type='{action_type}' AND {unix_timestamp - 2592000} < timestamp < {unix_timestamp}") 
     count = c.fetchone()
-    __import__('pprint').pprint(count)
     return count[0]
     c.close()
     conn.close()
@@ -70,7 +69,6 @@ def getLastId():
     c = conn.cursor()
     c.execute(f"SELECT seq FROM sqlite_sequence WHERE name='riskordlogs'")
     count = c.fetchone()
-    __import__('pprint').pprint(count)
     return count[0]
     c.close()
     conn.close()
@@ -107,8 +105,21 @@ class Janny(commands.Cog):
         punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
         staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
         logAction(user, "warn")
-        __import__('pprint').pprint(actionCountPast30d(user, "warn"))
+        action_count = actionCountPast30d(user, "warn")
         last_id = getLastId()
+
+        if action_count => 2:
+            warn_mult = action_count - 1 
+            await user.timeout(seconds=7200*warn_mult) ## So essentially, for every warn you get 2 more hours in the slammer
+            last_id = getLastId()
+            embed = genericEmbed(last_id, "warn", interaction.user, user, reason)
+            await punishment_logs_parsed.send(embed=embed)
+            await user.send(embed=embed)
+            message = await staff_punishment_logs_parsed.send(embed=embed)
+            await message.create_thread(name=f"Case {last_id}")
+            await interaction.response.send_message(f"Warned and muted for {warn_mult*7200/3600} hours", ephemeral=True)
+            return
+
         embed = genericEmbed(last_id, "warn", interaction.user, user, reason)
         await punishment_logs_parsed.send(embed=embed)
         await user.send(embed=embed)
