@@ -172,6 +172,7 @@ class Janny(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def mute(self, interaction:discord.Interaction, user:discord.Member, reason:str, length:str):
+        staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
         if user.is_timed_out():
             await user.timeout(None)
             await interaction.response.send_message("Unmuted")
@@ -183,10 +184,10 @@ class Janny(commands.Cog):
             )
             message = await staff_punishment_logs_parsed.send(embed=embed)
             await message.create_thread(name=message.id)
+            return
 
         length = lengthStringToSec(length)
         punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
-        staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
         logAction(user, "timeout", interaction.user)
         action_count = actionCountPast30d(user, "timeout")
         last_id = getLastId()
