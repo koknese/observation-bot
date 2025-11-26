@@ -119,7 +119,7 @@ class Janny(commands.Cog):
     async def warn(self, interaction:discord.Interaction, user:discord.Member, reason:str):
         punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
         staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
-        logAction(user, "warn", interaction.user.id)
+        logAction(user, "warn", interaction.user)
         action_count = actionCountPast30d(user, "warn")
         last_id = getLastId()
 
@@ -155,7 +155,7 @@ class Janny(commands.Cog):
     async def kick(self, interaction:discord.Interaction, user:discord.Member, reason:str, length:str):
         punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
         staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
-        logAction(user, "kick", interaction.user.id)
+        logAction(user, "kick", interaction.user)
         action_count = actionCountPast30d(user, "kick")
         last_id = getLastId()
         embed = genericEmbed(last_id, "kick", interaction.user, user, reason)
@@ -174,7 +174,7 @@ class Janny(commands.Cog):
         length = lengthStringToSec(length)
         punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
         staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
-        logAction(user, "timeout", interaction.user.id)
+        logAction(user, "timeout", interaction.user)
         action_count = actionCountPast30d(user, "timeout")
         last_id = getLastId()
 
@@ -208,7 +208,7 @@ class Janny(commands.Cog):
     async def ban(self, interaction:discord.Interaction, user:discord.Member, reason:str, appealable:bool):
         punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
         staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
-        logAction(user, "ban", interaction.user.id)
+        logAction(user, "ban", interaction.user)
         action_count = actionCountPast30d(user, "ban")
         last_id = getLastId()
         if appealable:
