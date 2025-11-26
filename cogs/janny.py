@@ -23,6 +23,20 @@ staff_punishment_logs = int(os.getenv('STAFF_PUNISHMENT_LOGS'))
 # ban
 # mute
 
+def lengthStringToSec(string):
+    indicator = string[-1]
+    number = int(string[:-1])
+    allowed_indicators =  {
+            "d": 86400,
+            "h": 3600,
+            "m": 60
+    }
+    if indicator not in list(allowed_indicators.keys()):
+        return "illegal indicator"
+    else:
+        return number * allowed_indicators[indicator]
+
+
 def genericEmbed(caseid, action_type, author, target, reason):
     embed = discord.Embed(
         color=16038116,
@@ -73,20 +87,21 @@ def getLastId():
     c.close()
     conn.close()
 
-def logAction(user, action_type):
+def logAction(user, action_type, admin):
     conn = sqlite3.connect("data.db")
     c = conn.cursor()
     c.execute(f"""CREATE TABLE IF NOT EXISTS riskordlogs (
             caseid INTEGER PRIMARY KEY AUTOINCREMENT,
             user INT NOT NULL,
             type TEXT NOT NULL,
-            timestamp INT NOT NULL
+            timestamp INT NOT NULL,
+            admin INT NOT NULL
             ) 
           """)
 
     unix_timestamp = str(int(time.time())) # horrible but works
 
-    c.execute(f"INSERT INTO riskordlogs (user, type, timestamp) VALUES (?, ?, ?)", (user.id, action_type, unix_timestamp))
+    c.execute(f"INSERT INTO riskordlogs (user, type, timestamp, admin) VALUES (?, ?, ?, ?)", (user.id, action_type, unix_timestamp, admin.id))
     conn.commit()
     c.close()
     conn.close()
@@ -104,7 +119,7 @@ class Janny(commands.Cog):
     async def warn(self, interaction:discord.Interaction, user:discord.Member, reason:str):
         punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
         staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
-        logAction(user, "warn")
+        logAction(user, "warn", interaction.user.id)
         action_count = actionCountPast30d(user, "warn")
         last_id = getLastId()
 
@@ -113,6 +128,11 @@ class Janny(commands.Cog):
             await user.timeout(seconds=7200*warn_mult) ## So essentially, for every warn you get 2 more hours in the slammer
             last_id = getLastId()
             embed = genericEmbed(last_id, "warn", interaction.user, user, reason)
+            embed.add_field(
+                name=f"User reached 2 or more warns, muted for {warn_mult*7200/3600} hours.",
+                value="",
+                inline=False,
+            )
             await punishment_logs_parsed.send(embed=embed)
             await user.send(embed=embed)
             message = await staff_punishment_logs_parsed.send(embed=embed)
@@ -127,18 +147,82 @@ class Janny(commands.Cog):
         await message.create_thread(name=f"Case {last_id}")
         await interaction.response.send_message("Warned", ephemeral=True)
 
-    #@app_commands.command(
-    #    name="mute",
-    #    description="Warn a user"
-    #)
-    #@app_commands.guilds(discord.Object(id=server_id))
-    #@app_commands.describe(proof="Image formats !!ONLY!!")
-    #async def warn(self, interaction:discord.Interaction, user:discord.Member, reason:str, proof:discord.Attachment):
-    #    punishment_logs = bot.get_channel(punishment_logs)
-    #    logAction(user, "warn")
-    #    embed = genericEmbed(getLastId(), "warn", interaction.user, user, reason)
-    #    await punishment_logs.send(embed=embed)
-    #    await 
+    @app_commands.command(
+        name="kick",
+        description="Kicks a user"
+    )
+    @app_commands.guilds(discord.Object(id=server_id))
+    async def kick(self, interaction:discord.Interaction, user:discord.Member, reason:str, length:str):
+        punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
+        staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
+        logAction(user, "kick", interaction.user.id)
+        action_count = actionCountPast30d(user, "kick")
+        last_id = getLastId()
+        embed = genericEmbed(last_id, "kick", interaction.user, user, reason)
+        await punishment_logs_parsed.send(embed=embed)
+        await user.send(embed=embed)
+        message = await staff_punishment_logs_parsed.send(embed=embed)
+        await message.create_thread(name=f"Case {last_id}")
+        await interaction.response.send_message(f"Kicked", ephemeral=True)
+
+    @app_commands.command(
+        name="mute",
+        description="Mute a user"
+    )
+    @app_commands.guilds(discord.Object(id=server_id))
+    async def mute(self, interaction:discord.Interaction, user:discord.Member, reason:str, length:str):
+        length = lengthStringToSec(length)
+        punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
+        staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
+        logAction(user, "timeout", interaction.user.id)
+        action_count = actionCountPast30d(user, "timeout")
+        last_id = getLastId()
+
+        if action_count => 4:
+            embed = genericEmbed(last_id, "timeout", interaction.user, user, reason) 
+            embed.add_field(
+                name="User reached 4 or more mutes, appeal in 7 days.",
+                value="",
+                inline=False,
+            )
+            await punishment_logs_parsed.send(embed=embed)
+            await user.send("https://discord.gg/CDCgYeE5", embed=embed)
+            message = await staff_punishment_logs_parsed.send(embed=embed)
+            await message.create_thread(name=f"Case {last_id}")
+            await user.ban()
+            await interaction.response.send_message(f"Banned for 7 days, user had 4 or more mutes", ephemeral=True)
+            return
+
+        embed = genericEmbed(last_id, "timeout", interaction.user, user, reason)
+        await punishment_logs_parsed.send(embed=embed)
+        await user.send(embed=embed)
+        message = await staff_punishment_logs_parsed.send(embed=embed)
+        await message.create_thread(name=f"Case {last_id}")
+        await interaction.response.send_message(f"Muted for {length/3600} hours", ephemeral=True)
+
+    @app_commands.command(
+        name="ban",
+        description="Ban a user"
+    )
+    @app_commands.guilds(discord.Object(id=server_id))
+    async def ban(self, interaction:discord.Interaction, user:discord.Member, reason:str, appealable:bool):
+        punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
+        staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
+        logAction(user, "ban", interaction.user.id)
+        action_count = actionCountPast30d(user, "ban")
+        last_id = getLastId()
+        if appealable:
+            await user.send("https://discord.com/CDCgYeE5", embed=embed)
+        else:
+            await user.send(embed=embed)
+
+        await user.ban()
+        message = await staff_punishment_logs_parsed.send(embed=embed)
+        await message.create_thread(name=f"Case {last_id}")
+        await interaction.response.send_message(f"Banned", ephemeral=True)
+        embed = genericEmbed(last_id, "ban", interaction.user, user, reason)
+        await punishment_logs_parsed.send(embed=embed)
+        await user.send(embed=embed)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Janny(bot), guild=discord.Object(id=server_id))
