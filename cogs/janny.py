@@ -126,7 +126,7 @@ class Janny(commands.Cog):
 
         if action_count >= 2:
             warn_mult = action_count - 1 
-            await user.timeout(timedelt=(seconds=7200*warn_mult)) ## So essentially, for every warn you get 2 more hours in the slammer
+            await user.timeout(timedelta=(seconds=7200*warn_mult)) ## So essentially, for every warn you get 2 more hours in the slammer
             last_id = getLastId()
             embed = genericEmbed(last_id, "warn", interaction.user, user, reason)
             embed.add_field(
@@ -197,6 +197,7 @@ class Janny(commands.Cog):
         embed = genericEmbed(last_id, "timeout", interaction.user, user, reason)
         await punishment_logs_parsed.send(embed=embed)
         await user.send(embed=embed)
+        await user.timeout(timedelta=(seconds=length)) ## So essentially, for every warn you get 2 more hours in the slammer
         message = await staff_punishment_logs_parsed.send(embed=embed)
         await message.create_thread(name=f"Case {last_id}")
         await interaction.response.send_message(f"Muted for {length/3600} hours", ephemeral=True)
