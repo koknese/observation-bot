@@ -123,7 +123,7 @@ class Janny(commands.Cog):
         action_count = actionCountPast30d(user, "warn")
         last_id = getLastId()
 
-        if action_count => 2:
+        if action_count >= 2:
             warn_mult = action_count - 1 
             await user.timeout(seconds=7200*warn_mult) ## So essentially, for every warn you get 2 more hours in the slammer
             last_id = getLastId()
@@ -178,7 +178,7 @@ class Janny(commands.Cog):
         action_count = actionCountPast30d(user, "timeout")
         last_id = getLastId()
 
-        if action_count => 4:
+        if action_count >= 4:
             embed = genericEmbed(last_id, "timeout", interaction.user, user, reason) 
             embed.add_field(
                 name="User reached 4 or more mutes, appeal in 7 days.",
