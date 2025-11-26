@@ -117,6 +117,7 @@ class Janny(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def warn(self, interaction:discord.Interaction, user:discord.Member, reason:str):
+        await interaction.response.defer()
         punishment_logs_parsed = interaction.client.get_channel(punishment_logs)
         staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
         logAction(user, "warn", interaction.user)
@@ -137,7 +138,7 @@ class Janny(commands.Cog):
             await user.send(embed=embed)
             message = await staff_punishment_logs_parsed.send(embed=embed)
             await message.create_thread(name=f"Case {last_id}")
-            await interaction.response.send_message(f"Warned and muted for {warn_mult*7200/3600} hours", ephemeral=True)
+            await interaction.followup.send(f"Warned and muted for {warn_mult*7200/3600} hours", ephemeral=True)
             return
 
         embed = genericEmbed(last_id, "warn", interaction.user, user, reason)
