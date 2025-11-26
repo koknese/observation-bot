@@ -172,6 +172,7 @@ class Janny(commands.Cog):
     )
     @app_commands.guilds(discord.Object(id=server_id))
     async def mute(self, interaction:discord.Interaction, user:discord.Member, reason:str, length:str):
+        await interaction.response.defer()
         staff_punishment_logs_parsed = interaction.client.get_channel(staff_punishment_logs)
         if user.is_timed_out():
             await user.timeout(None)
@@ -195,7 +196,7 @@ class Janny(commands.Cog):
         if action_count >= 4:
             embed = genericEmbed(last_id, "timeout", interaction.user, user, reason) 
             embed.add_field(
-                name="User reached 4 or more mutes, appeal in 7 days.",
+                name="User reached 4 or more mutes -- banned. Appeal in 7 days.",
                 value="",
                 inline=False,
             )
@@ -204,7 +205,7 @@ class Janny(commands.Cog):
             message = await staff_punishment_logs_parsed.send(embed=embed)
             await message.create_thread(name=f"Case {last_id}")
             await user.ban()
-            await interaction.response.send_message(f"Banned for 7 days, user had 4 or more mutes", ephemeral=True)
+            await interaction.followup.send(f"Banned for 7 days, user had 4 or more mutes", ephemeral=True)
             return
 
         embed = genericEmbed(last_id, "timeout", interaction.user, user, reason)
