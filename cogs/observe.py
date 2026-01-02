@@ -437,14 +437,20 @@ class Observation(commands.Cog):
         description='View the amount of observations made by a specific staff member'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    #@discord.app_commands.checks.has_any_role(observation_access)
+    @discord.app_commands.checks.has_any_role(observation_access)
     @app_commands.describe(ephemeral="Whether the output should be only seen by you or everyone in the channel")
     async def stats(self, interaction: discord.Interaction, user: discord.Member, ephemeral: bool):
         current_month = datetime.now().month
         current_year = datetime.now().year
         try:
             shortDateNow = datetime.today().replace(day=1)
-            shortDateLastMonth = datetime(shortDateNow.year, shortDateNow.month - 1, 1)
+            
+            # Handle the case when the current month is January
+            if shortDateNow.month == 1:
+                shortDateLastMonth = datetime(shortDateNow.year - 1, 12, 1)
+            else:
+                shortDateLastMonth = datetime(shortDateNow.year, shortDateNow.month - 1, 1)
+
             lastDayLastMonth = shortDateLastMonth.replace(day=calendar.monthrange(shortDateLastMonth.year, shortDateLastMonth.month)[1])
             tableName = "o" + str(user.id)
             conn = sqlite3.connect('data.db')
@@ -452,7 +458,7 @@ class Observation(commands.Cog):
             
             queries = [
                 f"SELECT COUNT (*) FROM {tableName} WHERE timestamp >= {int(shortDateNow.timestamp())}", 
-                f"SELECT COUNT (*) FROM {tableName} WHERE timestamp < {int(shortDateLastMonth.timestamp())} AND timestamp < {int(lastDayLastMonth.timestamp())}", 
+                f"SELECT COUNT (*) FROM {tableName} WHERE timestamp >= {int(shortDateLastMonth.timestamp())} AND timestamp <= {int(lastDayLastMonth.timestamp())}", 
                 f"SELECT COUNT (*) FROM {tableName}"
             ]
 
@@ -483,7 +489,6 @@ class Observation(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=ephemeral)
         except sqlite3.OperationalError as e:
             await interaction.response.send_message(f"SQLite OperationalError: Has the user ever made an observation? Making an observation creates a table. Full traceback:\n```{e}```")
-
         except Exception as e:
             await interaction.channel.send(e)
 
