@@ -10,7 +10,7 @@ import discord
 import random
 import string
 
-signature_req = 30
+signature_req = 20
 
 intents = discord.Intents.all()
 intents.members = True
