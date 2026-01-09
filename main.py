@@ -51,6 +51,43 @@ async def forcesync(interaction: discord.Interaction):
     else:
         await interaction.response.send_message(f"not owner.")
 
+@tree.command(name="latex", description="DEBUG: Like ping but more advanced because saltbear is a bum", guild=discord.Object(id=server_id))
+async def latex(interaction: discord.Interaction, equation:str):
+
+    #fetch("https://e1kf0882p7.execute-api.us-east-1.amazonaws.com/default/latex2image", {
+    #  "headers": {
+    #    "accept": "application/json, text/javascript, */*; q=0.01",
+    #    "accept-language": "lv-LV,lv;q=0.9",
+    #    "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+    #    "priority": "u=1, i",
+    #    "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+    #    "sec-ch-ua-mobile": "?0",
+    #    "sec-ch-ua-platform": "\"Linux\"",
+    #    "sec-fetch-dest": "empty",
+    #    "sec-fetch-mode": "cors",
+    #    "sec-fetch-site": "cross-site"
+    #  },
+    #  "referrer": "https://latex2image.joeraut.com/",
+    #  "body": "{\"latexInput\":\"\\\\begin{align*}\\nx^2\\n\\\\end{align*}\\n\",\"outputFormat\":\"PNG\",\"outputScale\":\"500%\"}",
+    #  "method": "POST",
+    #  "mode": "cors",
+    #  "credentials": "omit"
+    #});
+     
+    url = "https://e1kf0882p7.execute-api.us-east-1.amazonaws.com/default/latex2image"
+    payload = {
+        "latexInput": f"\\\\begin{{align*}} {equation} \\\\end{{align*}}",
+        "outputFormat": "PNG",
+        "outputScale": "500%"
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, data=payload) as response:
+            res = await response.json()
+            if res["error"] == None:
+                await interaction.response.send_message(res["imageUrl"])
+            else:
+                await interaction.response.send_message("Invalid input")
+
 @bot.event
 async def on_ready():
     print(f"We have logged in as {bot.user}")
