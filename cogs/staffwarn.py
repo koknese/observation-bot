@@ -95,10 +95,10 @@ class Staffwarns(commands.Cog):
         conn.close()
         if checkUserWarns(user.id, warn_type) == 2:
             if warn_type == "Game staff":
+                demotion_channel = interaction.client.get_channel(demotion_logs)
+                await demotion_channel.send(f"{robloxUsername["cachedUsername"]} (<@{user.id}>)\n{getRankInGroup(robloxUsername["robloxId"])} -> Participant\nReached 2/2 staff warnings.")
                 group = await client.get_group(2568175)
                 await group.set_rank(robloxUsername["robloxId"], 1)
-                demotion_channel = interaction.client.get_channel(demotion_logs)
-                await demotion_channel.send(f"{robloxUsername["cachedUsername"]} (<@user.id>)\n{getRankInGroup(robloxUsername["robloxId"])} -> Participant\nReached 2/2 staff warnings.")
             else:
                 pass
 
