@@ -80,7 +80,7 @@ class Reasonmodal(discord.ui.Modal, title='Reason'):
         await interaction.response.defer(ephemeral=True)
         roblox_username = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
         unix_timestamp = int(time.time()) # horrible but works
-        ban = await postBan(self.user, self.body.value, f"https://discord.com/channels/252552812427214849/{interaction.channel.id}/{self.message.id}", unix_timestamp + self.length, roblox["cachedUsername"])
+        ban = await postBan(self.user, self.body.value, f"https://discord.com/channels/252552812427214849/{interaction.channel.id}/{self.message.id}", unix_timestamp + self.length, roblox_username["cachedUsername"])
         __import__('pprint').pprint(ban)
         if ban == 201:
             banlogs = interaction.client.get_channel(banishment_logs)
