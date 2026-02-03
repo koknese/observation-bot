@@ -47,8 +47,8 @@ def getUserId(username):
     print(f"getUserId :: Fetched user ID of username {username} -> {userId}")
     return userId
 
-async def postBan(user, reason, logsLink, expiresIn):
-    url = "https://staff.riskuniversalis.org/api/bans/post-ban"
+async def postBan(user, reason, logsLink, expiresIn, bannedBy):
+    url = f"https://staff.riskuniversalis.org/api/bans/post-ban-proxy/{bannedBy}"
     headers = {
         'Cookie': f"sessionToken={herokuapp_token}"
     }
@@ -78,12 +78,12 @@ class Reasonmodal(discord.ui.Modal, title='Reason'):
     body = ui.TextInput(label='Reason', placeholder="Griefing, nation ruining, powerplay, godplay, abusing !staffGodRolls", style=discord.TextStyle.long)
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
+        roblox_username = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
         unix_timestamp = int(time.time()) # horrible but works
-        ban = await postBan(self.user, self.body.value, f"https://discord.com/channels/252552812427214849/{interaction.channel.id}/{self.message.id}", unix_timestamp + self.length)
+        ban = await postBan(self.user, self.body.value, f"https://discord.com/channels/252552812427214849/{interaction.channel.id}/{self.message.id}", unix_timestamp + self.length, roblox["cachedUsername"])
         __import__('pprint').pprint(ban)
         if ban == 201:
             banlogs = interaction.client.get_channel(banishment_logs)
-            roblox_username = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
             await banlogs.send(f"{self.user}\n**Banned by**: {roblox_username["cachedUsername"]} (<@{interaction.user.id}>)\n**Length**: until <t:{unix_timestamp + self.length}:f>\n**Reason**: {self.body.value}", embed=self.message.embeds[0])
         else:
             await interaction.followup.send("Something has gone wrong. Does the user exist or is the user already banned?")
