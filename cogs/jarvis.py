@@ -3,15 +3,17 @@ import io
 import chat_exporter
 import requests
 import sqlite3
+import aiohttp
 import datetime
+import os
+import time
+import pprint
 from misc.rover import discordToRoblox
 from discord import app_commands, Embed, ui
 from discord.utils import get
 from discord.ext import commands
 from dotenv import load_dotenv
 from typing import Literal
-import os
-import pprint
 
 intents = discord.Intents.all()
 intents.members = True
@@ -61,7 +63,6 @@ async def postBan(user, reason, logsLink, expiresIn, bannedBy):
     headers = {
         'Cookie': f"sessionToken={herokuapp_token}"
     }
-    # {user: "123123sad", reason: "s", logsLink: "s", expiresIn: 1762902579, appealable: true}
     payload = {
         "user": user,
         "reason": reason,
@@ -82,7 +83,6 @@ async def deleteBan(user):
     headers = {
         'Cookie': f"sessionToken={herokuapp_token}"
     }
-    # {user: "123123sad", reason: "s", logsLink: "s", expiresIn: 1762902579, appealable: true}
     async with aiohttp.ClientSession() as session:
         async with session.delete(url, headers=headers) as response:
             __import__('pprint').pprint(response.status)
@@ -101,23 +101,27 @@ class Ban(discord.ui.Modal, title='Banning a player'):
     
     async def on_submit(self, interaction: discord.Interaction):
         if self.length.value[-1].lower() == "d":
-            finalLength = self.length.value[:-1] * 86400
+            finalLength = int(self.length.value[:-1]) * 86400 + int(time.time())
         elif self.length.value.lower() == "permanent":
             finalLength = None
         else:
             await interaction.response.send_message("Malformed length", ephemeral=True)
             return
     
-        ban = await postBan(self.user.value, self.reason.value, )
+        ban = await postBan(self.user.value, self.reason.value, "<Issue via Jarvis>", finalLength ,self.roblox_username) 
+        __import__('pprint').pprint(finalLength)
         __import__('pprint').pprint(ban)
         if ban == 201:
             banlogs = interaction.client.get_channel(banishment_logs)
-            await banlogs.send(f"{self.user}\n**Banned by**: {self.roblox_username}\n**Length**: until <t:{unix_timestamp + self.length}:f>\n**Reason**: {self.body.value}")
+            await banlogs.send(f"{self.user}\n**Banned by**: {self.roblox_username}\n**Length**: until <t:{finalLength}:f>\n**Reason**: {self.reason.value}")
+            await interaction.response.send_message(f"`{self.user.value}` banned.")
+        elif ban == 409:
+            await interaction.response.send_message(f"`{self.user.value}` is already banned.")
         else:
-            await interaction.response.send_message("Something has gone wrong. Does the user exist or is the user already banned?")
+            await interaction.response.send_message("Something has gone wrong. Does the user exist?")
 
 class Unban(discord.ui.Modal, title='Unbanning a player'):
-    def __init__(self,):
+    def __init__(self):
         super().__init__()
 
     user = ui.TextInput(label='User to unban', placeholder="nuumnuum", style=discord.TextStyle.short)
@@ -126,8 +130,7 @@ class Unban(discord.ui.Modal, title='Unbanning a player'):
         ban = await deleteBan(self.user.value)
         __import__('pprint').pprint(ban)
         if ban == 201:
-            banlogs = interaction.client.get_channel(banishment_logs)
-            await banlogs.send(f"{self.user}\n**Banned by**: {roblox_username["cachedUsername"]} (<@{interaction.user.id}>)\n**Length**: until <t:{unix_timestamp + self.length}:f>\n**Reason**: {self.body.value}", embed=self.message.embeds[0])
+            await interaction.response.send_message("Unbanned")
         else:
             await interaction.response.send_message("Something has gone wrong. Does the user exist or is the user already banned?")
 
@@ -137,12 +140,13 @@ class Actions(ui.ActionRow):
         super().__init__()
 
     @ui.button(label='Ban a player', style=discord.ButtonStyle.red, emoji="<:banUser:1471189951516250243>")
-    async def new_image(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.send_modal(Ban)
+    async def banPlayer(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        rover_data = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
+        await interaction.response.send_modal(Ban(rover_data["cachedUsername"]))
 
     @ui.button(label='Unban a player', style=discord.ButtonStyle.primary, emoji="<:unbanUser:1471211707190870311>")
-    async def change_text(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-        await interaction.response.send_modal(ChangeTextModal(self.__view))
+    async def unbanPlayer(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await interaction.response.send_modal(Unban())
 
 class Welcome(ui.LayoutView):
     def __init__(self, *, roblox_user:str, roblox_id:int, greeting:str) -> None:
@@ -176,11 +180,10 @@ class Jarvis(commands.Cog):
         role2 = interaction.guild.get_role(admin)
         if role not in interaction.user.roles and role2 not in interaction.user.roles:
             return   
-        await interaction.response.defer()
-        await interaction.followup.send("Logging in...", ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
+        initmsg = await interaction.followup.send(content="Logging in...")
         rover_data = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
-        await interaction.followup.send(view=Welcome(roblox_user=rover_data["cachedUsername"], roblox_id=rover_data["robloxId"], greeting=getGreeting(datetime.datetime.now())))
-    # def __init__(self, *, roblox_user:str, roblox_id:int, roblox_portrait:str, greeting:str, interaction:any) -> None:
+        await initmsg.edit(content="", view=Welcome(roblox_user=rover_data["cachedUsername"], roblox_id=rover_data["robloxId"], greeting=getGreeting(datetime.datetime.now())))
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Jarvis(bot), guild=discord.Object(id=server_id))
