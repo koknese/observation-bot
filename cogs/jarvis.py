@@ -136,7 +136,7 @@ class Actions(ui.ActionRow):
         self.__view = view
         super().__init__()
 
-    @ui.button(label='Ban a player', style=discord.ButtonStyle.Red, emoji="<:banUser:1471189951516250243>")
+    @ui.button(label='Ban a player', style=discord.ButtonStyle.red, emoji="<:banUser:1471189951516250243>")
     async def new_image(self, interaction: discord.Interaction[Bot], button: discord.ui.Button) -> None:
         await interaction.response.send_modal(Ban)
 
