@@ -109,8 +109,6 @@ class Ban(discord.ui.Modal, title='Banning a player'):
             return
     
         ban = await postBan(self.user.value, self.reason.value, "<Issue via Jarvis>", finalLength ,self.roblox_username) 
-        __import__('pprint').pprint(finalLength)
-        __import__('pprint').pprint(ban)
         if ban == 201:
             banlogs = interaction.client.get_channel(banishment_logs)
             await banlogs.send(f"{self.user}\n**Banned by**: {self.roblox_username}\n**Length**: until <t:{finalLength}:f>\n**Reason**: {self.reason.value}")
@@ -128,7 +126,7 @@ class Unban(discord.ui.Modal, title='Unbanning a player'):
     
     async def on_submit(self, interaction: discord.Interaction):
         ban = await deleteBan(self.user.value)
-        __import__('pprint').pprint(ban)
+        __import__('pprint').pprint(f"{interaction.user} attempts to ban {self.user.value}")
         if ban == 201:
             await interaction.response.send_message("Unbanned")
         else:
