@@ -137,11 +137,11 @@ class Actions(ui.ActionRow):
         super().__init__()
 
     @ui.button(label='Ban a player', style=discord.ButtonStyle.red, emoji="<:banUser:1471189951516250243>")
-    async def new_image(self, interaction: discord.Interaction[Bot], button: discord.ui.Button) -> None:
+    async def new_image(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.send_modal(Ban)
 
     @ui.button(label='Unban a player', style=discord.ButtonStyle.primary, emoji="<:unbanUser:1471211707190870311>")
-    async def change_text(self, interaction: discord.Interaction[Bot], button: discord.ui.Button) -> None:
+    async def change_text(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.send_modal(ChangeTextModal(self.__view))
 
 class Welcome(ui.LayoutView):
