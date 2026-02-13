@@ -105,18 +105,18 @@ class Ban(discord.ui.Modal, title='Banning a player'):
         elif self.length.value.lower() == "permanent":
             finalLength = None
         else:
-            await interaction.response.send_message("Malformed length", ephemeral=True)
+            await interaction.response.send_message("<:failure:1471929876427706398> **Malformed length!** Valid lengths: `7d` (or any other number) or `Permanent`", ephemeral=True)
             return
     
         ban = await postBan(self.user.value, self.reason.value, "<Issue via Jarvis>", finalLength ,self.roblox_username) 
         if ban == 201:
             banlogs = interaction.client.get_channel(banishment_logs)
             await banlogs.send(f"{self.user}\n**Banned by**: {self.roblox_username}\n**Length**: until <t:{finalLength}:f>\n**Reason**: {self.reason.value}")
-            await interaction.response.send_message(f"`{self.user.value}` banned.")
+            await interaction.response.send_message(f"<:success:1471929874867421318> `{self.user.value}` banned!")
         elif ban == 409:
-            await interaction.response.send_message(f"`{self.user.value}` is already banned.")
+            await interaction.response.send_message(f"<:failure:1471929876427706398> `{self.user.value}` is already banned.")
         else:
-            await interaction.response.send_message("Something has gone wrong. Does the user exist?")
+            await interaction.response.send_message("<:failure:1471929876427706398> Something has gone wrong. Does the user even exist?")
 
 class Unban(discord.ui.Modal, title='Unbanning a player'):
     def __init__(self):
@@ -128,9 +128,9 @@ class Unban(discord.ui.Modal, title='Unbanning a player'):
         ban = await deleteBan(self.user.value)
         __import__('pprint').pprint(f"{interaction.user} attempts to ban {self.user.value}")
         if ban == 201:
-            await interaction.response.send_message("Unbanned")
+            await interaction.response.send_message("<:success:1471929874867421318> **Unbanned!**")
         else:
-            await interaction.response.send_message("Something has gone wrong. Does the user exist or is the user already banned?")
+            await interaction.response.send_message("<:failure:1471929876427706398> Something has gone wrong. Does the user exist or is the user not banned?")
 
 class Actions(ui.ActionRow):
     def __init__(self, view: 'Actions') -> None:
