@@ -147,12 +147,9 @@ class Actions(ui.ActionRow):
 class Welcome(ui.LayoutView):
     def __init__(self, *, roblox_user:str, roblox_id:int, greeting:str) -> None:
         super().__init__(timeout=None)
-        self.roblox_id = roblox_id
-        self.roblox_user = roblox_user
-        self.greeting = greeting
-
-        self.thumbnail = ui.Thumbnail(media=getHeadshot(self.roblox_id))
-        self.title = ui.TextDisplay(f"## <:logged:1471188673893765356> Welcome to Jarvis:tm:\n{self.greeting}, **{self.roblox_user}.**")
+        self.thumbnail = ui.Thumbnail(media=getHeadshot(roblox_id))
+        self.title = ui.TextDisplay(f"## <:logged:1471188673893765356> Welcome to Jarvis:tm:\n{greeting}, **{roblox_user}.**")
+        self.buttons = Actions(self)
 
         self.separator = ui.Separator(visible=True)
         self.section = ui.Section(self.title, accessory=self.thumbnail)
