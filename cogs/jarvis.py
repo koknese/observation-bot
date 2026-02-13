@@ -174,10 +174,11 @@ class Jarvis(commands.Cog):
         description="Access RiskAPI via Risky"
     )
     @app_commands.guilds(discord.Object(id=server_id))
+        async def jarvis(self, interaction: discord.Interaction):
         role = interaction.guild.get_role(senior_mod)
         role2 = interaction.guild.get_role(admin)
         if role not in interaction.user.roles and role2 not in interaction.user.roles:
-            return   async def jarvis(self, interaction: discord.Interaction):
+            return   
         await interaction.response.defer()
         await interaction.followup.send("Logging in...", ephemeral=True)
         rover_data = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
