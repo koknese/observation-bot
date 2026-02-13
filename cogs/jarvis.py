@@ -145,7 +145,7 @@ class Actions(ui.ActionRow):
         await interaction.response.send_modal(ChangeTextModal(self.__view))
 
 class Welcome(ui.LayoutView):
-    def __init__(self, *, roblox_user:str, roblox_id:int, greeting:str, interaction:any) -> None:
+    def __init__(self, *, roblox_user:str, roblox_id:int, greeting:str) -> None:
         super().__init__(timeout=None)
         self.roblox_id = roblox_id
         self.roblox_user = roblox_user
@@ -182,7 +182,7 @@ class Jarvis(commands.Cog):
         await interaction.response.defer()
         await interaction.followup.send("Logging in...", ephemeral=True)
         rover_data = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
-        await interaction.followup.send(view=Welcome(roblox_user=rover_data["cachedUsername"], roblox_id=rover_data["robloxId"], greeting=getGreeting(datetime.datetime.now()), interaction=interaction))
+        await interaction.followup.send(view=Welcome(roblox_user=rover_data["cachedUsername"], roblox_id=rover_data["robloxId"], greeting=getGreeting(datetime.datetime.now())))
     # def __init__(self, *, roblox_user:str, roblox_id:int, roblox_portrait:str, greeting:str, interaction:any) -> None:
 
 async def setup(bot: commands.Bot):
