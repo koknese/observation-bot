@@ -182,7 +182,7 @@ class Jarvis(commands.Cog):
         await interaction.response.defer()
         await interaction.followup.send("Logging in...", ephemeral=True)
         rover_data = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
-        await interaction.followup.send(view=Welcome(rover_data["cachedUsername"], rover_data["robloxId"], getGreeting(datetime.datetime.now()), interaction))
+        await interaction.followup.send(view=Welcome(roblox_user=rover_data["cachedUsername"], roblox_id=rover_data["robloxId"], greeting=getGreeting(datetime.datetime.now()), interaction=interaction))
     # def __init__(self, *, roblox_user:str, roblox_id:int, roblox_portrait:str, greeting:str, interaction:any) -> None:
 
 async def setup(bot: commands.Bot):
