@@ -90,6 +90,18 @@ async def deleteBan(user):
             __import__('pprint').pprint(res)
             return response.status
 
+async def getBanHistory(user):
+    url = f"https://staff.riskuniversalis.org/api/bans/get-ban-history/{user}"
+    headers = {
+        'Cookie': f"sessionToken={herokuapp_token}"
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            __import__('pprint').pprint(response.status)
+            res = await response.json()
+            __import__('pprint').pprint(res)
+            return res
+
 class Ban(discord.ui.Modal, title='Banning a player'):
     def __init__(self,roblox_username):
         self.roblox_username = roblox_username
@@ -108,10 +120,10 @@ class Ban(discord.ui.Modal, title='Banning a player'):
             await interaction.response.send_message("<:failure:1471929876427706398> **Malformed length!** Valid lengths: `7d` (or any other number) or `Permanent`", ephemeral=True)
             return
     
-        ban = await postBan(self.user.value, self.reason.value, "<Issue via Jarvis>", finalLength ,self.roblox_username) 
+        ban = await postBan(self.user.value, self.reason.value, "<Issued via Jarvis>", finalLength ,self.roblox_username) 
         if ban == 201:
             banlogs = interaction.client.get_channel(banishment_logs)
-            await banlogs.send(f"{self.user}\n**Banned by**: {self.roblox_username}\n**Length**: until <t:{finalLength}:f>\n**Reason**: {self.reason.value}")
+            await banlogs.send(f"{self.user}\n**Banned by**: {self.roblox_username} (<@{interaction.user.id}>)\n**Length**: until <t:{finalLength}:f>\n**Reason**: {self.reason.value}")
             await interaction.response.send_message(f"<:success:1471929874867421318> `{self.user.value}` banned!")
         elif ban == 409:
             await interaction.response.send_message(f"<:failure:1471929876427706398> `{self.user.value}` is already banned.")
@@ -132,6 +144,32 @@ class Unban(discord.ui.Modal, title='Unbanning a player'):
         else:
             await interaction.response.send_message("<:failure:1471929876427706398> Something has gone wrong. Does the user exist or is the user not banned?")
 
+class History(discord.ui.Modal, title='Viewing the ban history of a player'):
+    def __init__(self):
+        super().__init__()
+
+    user = ui.TextInput(label='User to check', placeholder="nuumnuum", style=discord.TextStyle.short)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        hist = await getBanHistory(self.user.value)
+        await interaction.response.defer(thinking=True)
+        embed = discord.Embed(title=f"{self.user.value} ban record",
+                              colour=0x00b0f4)
+        embed.set_author(name="Jarvis")
+        embed.add_field(
+            name="Is banned?",
+            value=f"**{'<:banned:1476996117529886907>' if hist['isBanned'] else '<:unbanned:1476996115747442880>'} {hist['isBanned']}**",
+            inline=False
+        )
+        if len(hist["banHistory"]) >= 1:
+            for ban in hist["banHistory"]:
+                embed.add_field(
+                        name=f"Ban at <t:{ban["logged_at"]}:f>",
+                        value=ban["reason"],
+                        inline=False
+                )
+        await interaction.followup.send(embed=embed)
+
 class Actions(ui.ActionRow):
     def __init__(self, view: 'Actions') -> None:
         self.__view = view
@@ -145,6 +183,10 @@ class Actions(ui.ActionRow):
     @ui.button(label='Unban a player', style=discord.ButtonStyle.primary, emoji="<:unbanUser:1471211707190870311>")
     async def unbanPlayer(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.send_modal(Unban())
+
+    @ui.button(label='Check ban history', style=discord.ButtonStyle.primary, emoji="<:checkUser:1476998999880765565>")
+    async def checkPlayer(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        await interaction.response.send_modal(History())
 
 class Welcome(ui.LayoutView):
     def __init__(self, *, roblox_user:str, roblox_id:int, greeting:str) -> None:
