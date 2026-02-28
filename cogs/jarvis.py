@@ -102,6 +102,16 @@ async def getBanHistory(user):
             __import__('pprint').pprint(res)
             return res
 
+async def getPlaytime(user):
+    url = f"https://staff.riskuniversalis.org/api/playtime/get-playtime-user/{user}?days=30"
+    headers = {
+        'Cookie': f"sessionToken={herokuapp_token}"
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            res = await response.json()
+            return res[0]["sum(time)"]
+
 class Ban(discord.ui.Modal, title='Banning a player'):
     def __init__(self,roblox_username):
         self.roblox_username = roblox_username
@@ -189,10 +199,10 @@ class Actions(ui.ActionRow):
         await interaction.response.send_modal(History())
 
 class Welcome(ui.LayoutView):
-    def __init__(self, *, roblox_user:str, roblox_id:int, greeting:str) -> None:
+    def __init__(self, *, roblox_user:str, roblox_id:int, greeting:str, playtime:int) -> None:
         super().__init__(timeout=None)
         self.thumbnail = ui.Thumbnail(media=getHeadshot(roblox_id))
-        self.title = ui.TextDisplay(f"## <:logged:1471188673893765356> Welcome to Jarvis:tm:\n{greeting}, **{roblox_user}.**")
+        self.title = ui.TextDisplay(f"## <:logged:1471188673893765356> Welcome to Jarvis:tm:\n{greeting}, **{roblox_user}.**\nYour playtime for the last 30 days: **~{playtime} hours** ")
         self.buttons = Actions(self)
 
         self.separator = ui.Separator(visible=True)
@@ -223,7 +233,14 @@ class Jarvis(commands.Cog):
         await interaction.response.defer(ephemeral=True)
         initmsg = await interaction.followup.send(content="Logging in...")
         rover_data = await discordToRoblox(rover_token, 252552812427214849, interaction.user.id)
-        await initmsg.edit(content="", view=Welcome(roblox_user=rover_data["cachedUsername"], roblox_id=rover_data["robloxId"], greeting=getGreeting(datetime.datetime.now())))
+        await initmsg.edit(content="", 
+                           view=Welcome(
+                               roblox_user=rover_data["cachedUsername"],
+                               roblox_id=rover_data["robloxId"],
+                               greeting=getGreeting(datetime.datetime.now()),
+                               playtime=int(await getPlaytime(rover_data["cachedUsername"])/3600)
+                           )
+        )
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Jarvis(bot), guild=discord.Object(id=server_id))
