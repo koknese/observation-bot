@@ -1,8 +1,6 @@
 import discord
 import io
-import chat_exporter
 import requests
-import sqlite3
 import aiohttp
 import datetime
 import os
