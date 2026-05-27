@@ -212,7 +212,7 @@ class Observation(commands.Cog):
                   if observation_type == "positive":
                       emoji = ":green_circle:"
                       return emoji
-                  elif observation_type == "pegative":
+                  elif observation_type == "negative":
                       emoji = ":red_circle:"
                       return emoji
                   elif observation_type == "neutral":
