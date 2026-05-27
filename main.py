@@ -42,7 +42,6 @@ async def load_cog(interaction: discord.Interaction, extension: str):
         await interaction.response.send_message(f"not owner.")
 
 @tree.command(name="force-sync", description="DEBUG: forcesync", guild=discord.Object(id=server_id))
-@discord.app_commands.checks.has_permissions(administrator=True)
 async def forcesync(interaction: discord.Interaction):
     if interaction.user.id == 432437043956809738:
         await interaction.response.send_message("Force sync...")

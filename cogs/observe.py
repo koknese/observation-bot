@@ -1,6 +1,7 @@
 from misc.rover import robloxToDiscord
 from misc.imgbb import upload
 from misc.paginator import Pagination
+from misc.freedcamp import Freedcamp
 from discord import app_commands, ui
 from discord.utils import get
 from discord.ext import commands
@@ -41,6 +42,8 @@ tm_id = os.getenv('TM_ID')
 observation_access = int(os.getenv('OBS_ROLE'))
 stats_access = int(os.getenv('HA_ROLE'))
 
+freedcamp = Freedcamp(fc_api_key, fc_secret)
+
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
 
@@ -75,219 +78,213 @@ def getRankInGroup(userid):
         error = "User ID couldn't be found or user not in group."
         return error
 
-def getId(username, app_id):
-    timestamp = int(time.time() * 1000)  
-    hash_bytes = hmac.new(fc_secret.encode(), (fc_api_key + str(timestamp)).encode(), hashlib.sha1).digest()
-    hash_string = hash_bytes.hex()
-    params = {
-        "api_key": fc_api_key,
-        "hash": hash_string,
-        "timestamp": timestamp,
-        "project_id": app_id
-    }
-    url = "https://freedcamp.com/api/v1/tasks"
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        r = response.json()
-    
-        def getTaskByTitle():
-            for task in r["data"]["tasks"]:
-                if task["title"].lower() == username.lower(): # using .lower in order to bypass case sensitivity 
-                    print(f"TASK FOUND")
-                    return task
-            return None
+class ObservationLayout(ui.LayoutView):
+    def __init__(self, *,interactionUserId:int, span_color:any, emoji:str, rank_id:int, fc_task_id:int, discord_id:int, roblox_id:int, count_towards_quota:bool, evidences:any, observation_type:str, roblox_username:str, description) -> None:
+        super().__init__(timeout=None)
+        self.separator = ui.Separator(visible=True)
+        self.invisSeparator = ui.Separator(visible=False)
+        self.author_text = discord.ui.TextDisplay(f"- <@{interactionUserId}>")
+        self.banner = discord.ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png"))
+        self.title = discord.ui.TextDisplay(f"# {emoji} {"An" if observation_type == "info" else "A"} {"informational" if observation_type == "info" else observation_type.lower()} observation was made for {roblox_username} (<@{discord_id}>)")
+        self.body = discord.ui.TextDisplay("\n".join(f"> {line}" for line in description.split("\n")))
+        self.evidence_media = discord.ui.MediaGallery()
+        if evidences != []:
+            for evidence in evidences:
+                if evidence:
+                    self.evidence_media.add_item(media=evidence)
 
-        if getTaskByTitle():
-            print(f"ID: {getTaskByTitle()["id"]}")
-            return getTaskByTitle()["id"]
-        else:
-            return None
-    else:
-        print(f"getId :: {response.text}")
+        self.dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{discord_id}", label="DMs"))
+        self.roblox_section = discord.ui.Section(ui.TextDisplay("User's ROBLOX profile"), accessory=discord.ui.Button(url=f"https://roblox.com/users/{roblox_id}/profile", label="ROBLOX"))
+        self.task_section = discord.ui.Section(ui.TextDisplay("User's Freedcamp task"), accessory=discord.ui.Button(url=f"https://freedcamp.com/view/{rank_id}/tasks/panel/task/{fc_task_id}", label="Freedcamp task"))
+        self.footer= discord.ui.TextDisplay(f"-# Observation counted towards quota: **{count_towards_quota}**")
 
-def postComment(task_id, contents, api_key, app_id):
-    timestamp = int(time.time() * 1000)  
-    hash_bytes = hmac.new(fc_secret.encode(), (fc_api_key + str(timestamp)).encode(), hashlib.sha1).digest()
-    hash_string = hash_bytes.hex()
-    url = f"https://freedcamp.com/api/v1/comments"
-    params = {
-        "api_key": api_key,
-        "hash": hash_string,
-        "timestamp": timestamp
-    }
-    data = {
-        "description": contents,
-        "app_id": app_id,
-        "task_id": task_id
-    }
-
-    response = requests.post(url, json=data, params=params)
-
-    if response.status_code == 200:
-        r = response.json()
-    else:
-        print(f"postComment:: {response.text}")
-
+        container = ui.Container(
+                self.banner,
+                self.separator,
+                self.title,
+                self.body,
+                self.author_text,
+                self.evidence_media if evidences != [] else self.invisSeparator,
+                self.separator,
+                self.dm_section,
+                self.roblox_section,
+                self.task_section,
+                self.footer,
+                accent_color=span_color
+        )
+        self.add_item(container)
 
 class Observation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
 
+
+    class ObserveModal(discord.ui.Modal, title='Observing a user'):
+        def __init__(self, observer):
+            self.observer = observer 
+            super().__init__()
+        images = discord.ui.Label(
+                text='Evidence',
+                description='Upload any evidence. IMAGES ONLY.',
+                component=discord.ui.FileUpload(
+                    max_values=10,
+                    custom_id='evidence_imgs',
+                    required=False,
+                ),
+        )
+        observation_type = discord.ui.Label(
+                text='Observation type',
+                description='Choose the type of observation',
+                component=discord.ui.Select(
+                    max_values=1,
+                    custom_id='observation_type',
+                    required=True,
+                    options = [
+                        discord.SelectOption(label="Positive", value="positive", emoji="🟢", description="For good deeds by the staff"),
+                        discord.SelectOption(label="Negative", value="negative", emoji="🔴", description="For the misdeeds by the staff"),
+                        discord.SelectOption(label="Neutral", value="neutral", emoji="🔲", description="Schrodingers observation"),
+                        discord.SelectOption(label="Informational", value="info", emoji="ℹ️", description="For notices, addendums, etc.")
+                    ]
+                ),
+        )
+        user = ui.TextInput(label='User to observe', placeholder="saltbear1 (ROBLOX usernames)", style=discord.TextStyle.short)
+        description = ui.TextInput(label='Observation description', placeholder="saltbear owes me 60k robux. neg obs", style=discord.TextStyle.long)
+        count_towards_quota = discord.ui.Label(text="Count towards quota?", component=discord.ui.Checkbox())
+        async def on_submit(self, interaction: discord.Interaction):
+            try:
+                await interaction.response.defer(thinking=True, ephemeral=True)
+                loading = await interaction.followup.send(f"<a:loading:1424337544891338784> Uploading evidence...")
+                observation_type = self.observation_type.component.values[0]
+                evidences = []
+                for evidence in self.images.component.values:
+                    if evidence:
+                        link = await upload(imgbb_key, evidence.url)
+                        link = link["data"]["url"]
+                        evidences.append(link)
+                await loading.edit(content=f"<a:loading:1424337544891338784> Getting user IDs...")
+                roblox_username = self.user.value.strip()
+                roblox_id = getUserId(roblox_username)
+                if roblox_id == None:
+                    await interaction.followup.send(f"No Roblox user `${roblox_username}` was found", ephemeral=True)
+                    return
+                response = await robloxToDiscord(rover_token, server_id, roblox_id)
+                discord_id = response['discordUsers'][0]['user']['id']
+
+                def correctRankId(chosenRank):
+                    match chosenRank:
+                        case "Gamemaster":
+                            return gm_id
+                        case "Trial Moderator":
+                            return tm_id
+                        case "Moderator":
+                            return mod_id
+                        case "Senior Moderator":
+                            return sm_id
+
+                await loading.edit(content=f"<a:loading:1424337544891338784> Getting user task...")
+                user_rank = getRankInGroup(roblox_id)
+                fc_task_id = await freedcamp.getId(roblox_username, correctRankId(user_rank))
+                if fc_task_id == None:
+                    await interaction.followup.send(f"No task for user `${roblox_username}` was found", ephemeral=True)
+                    return
+
+                def determineEmbedColor(observation_type):
+                    if observation_type == "positive":
+                      return discord.Color.green()
+                    elif observation_type == "negative":
+                      return discord.Color.red()
+                    else:
+                      return discord.Color.lighter_grey()
+
+                def determineSpanColor(observation_type):
+                    if observation_type == "positive":
+                        color = "008000"
+                        return color
+                    elif observation_type == "negative":
+                        color = "c0392b"
+                        return color
+                    else:
+                        color = "808080"
+                        return color
+
+                def determineEmoji(observation_type):
+                  if observation_type == "positive":
+                      emoji = ":green_circle:"
+                      return emoji
+                  elif observation_type == "pegative":
+                      emoji = ":red_circle:"
+                      return emoji
+                  elif observation_type == "neutral":
+                      emoji = ":white_circle:"
+                      return emoji
+                  elif observation_type == "info":
+                      emoji = ":information_source:"
+                      return emoji
+
+
+                await loading.edit(content=f"<a:loading:1424337544891338784> Uploading the observation to Freedcamp...")
+                comment = f"""
+                            <h2>
+                                <span style="color: #{determineSpanColor(observation_type)}">
+                                    <strong>{observation_type.capitalize()}</strong>
+                                </span> 
+                                - Logged by {interaction.user} ({interaction.user.id}) 
+                                {f'<a href={evidences[0]}>(provided proof)</a>' if evidences != [] else ''}
+                            </h2>
+                            
+                            <blockquote>
+                                {self.description.value.replace("\n", "<br>")}
+                            </blockquote>
+                            {f"<h3>This observation contains extra evidence found in observation-logging.</h3>" if len(evidences) >= 2 else ""}
+                            """.strip()
+                await freedcamp.postComment(fc_task_id, comment, correctRankId(user_rank))
+                if (observation_type != "Information") and self.count_towards_quota.component.value:
+                    await loading.edit(content=f"<a:loading:1424337544891338784> Registering observation to your stats...")
+                    conn = sqlite3.connect("data.db")
+                    c = conn.cursor()
+                    tableName = "o" + str(interaction.user.id) # bypassing sqlite not allowing numbers as table names
+                    c.execute(f"""CREATE TABLE IF NOT EXISTS {tableName}(
+                            short_date TEXT NOT NULL,
+                            timestamp TEXT NOT NULL
+                            ) 
+                          """)
+
+                    unix_timestamp = str(int(time.time())) # horrible but works
+
+                    c.execute(f"INSERT INTO {tableName} (short_date, timestamp) VALUES (?, ?)", ("123", unix_timestamp))
+                    conn.commit()
+                    c.close()
+                    conn.close()
+                logging_channel_parsed = interaction.client.get_channel(logging_channel_id)
+                await loading.edit(content=f"✅ Done!")
+                await logging_channel_parsed.send(view=ObservationLayout(
+                    interactionUserId=interaction.user.id,
+                    span_color=determineEmbedColor(observation_type),
+                    emoji=determineEmoji(observation_type),
+                    rank_id=correctRankId(user_rank),
+                    fc_task_id=fc_task_id,
+                    discord_id=discord_id,
+                    roblox_id=roblox_id,
+                    count_towards_quota=self.count_towards_quota.component.value,
+                    evidences=evidences,
+                    observation_type=observation_type,
+                    roblox_username=self.user.value,
+                    description=self.description.value
+                ))
+                
+            except Exception as e:
+                print(e)
+                await interaction.channel.send(f"```{e}```")
+
     @app_commands.command(
         name='observe',
         description='Submit an observation of a staff member'
     )
     @app_commands.guilds(discord.Object(id=server_id))
-    @app_commands.describe(roblox_username="User to log an observation for.", description="Use `\\n` to make a new line, for example \"Hello\\nHello on a new line!\"", count_towards_quota="If false, this won't log into your observation stats.", primary_evidence="To add more images, you must have primary_evidence uploaded. This will also be seen in FC.")
     @discord.app_commands.checks.has_any_role(observation_access)
-    async def observe(self, interaction: discord.Interaction, roblox_username: str, observation_type: Literal["Positive", "Negative", "Neutral", "Information"], description: str, count_towards_quota: bool, primary_evidence: discord.Attachment , evidence2: discord.Attachment = None, evidence3: discord.Attachment = None, evidence4: discord.Attachment = None, evidence5: discord.Attachment = None, evidence6: discord.Attachment = None, evidence7: discord.Attachment = None,):
-        await interaction.response.defer(thinking=True, ephemeral=True)
-        description = description.replace("\\n", "\n")
-        
-        evidences = []
-        for evidence in [primary_evidence, evidence2, evidence3, evidence4, evidence5, evidence6, evidence7]:
-            if evidence:
-                link = await upload(imgbb_key, evidence.url)
-                link = link["data"]["url"]
-                evidences.append(link)
-
-        def determineEmbedColor():
-          if observation_type == "Positive":
-            return discord.Color.green()
-          elif observation_type == "Negative":
-            return discord.Color.red()
-          elif observation_type == "Information" or "Neutral":
-            return discord.Color.lighter_grey()
-
-        def determineEmoji():
-          if observation_type == "Positive":
-              emoji = ":green_circle:"
-              return emoji
-          elif observation_type == "Negative":
-              emoji = ":red_circle:"
-              return emoji
-          elif observation_type == "Neutral":
-              emoji = ":white_circle:"
-              return emoji
-          elif observation_type == "Information":
-              emoji = ":information_source:"
-              return emoji
-    
-        def determineSpanColor():
-          if observation_type == "Positive":
-              color = "008000"
-              return color
-          elif observation_type == "Negative":
-              color = "c0392b"
-              return color
-          else:
-              color = "808080"
-              return color
-
-        def correctRankId(chosenRank):
-            match chosenRank:
-                case "Gamemaster":
-                    return gm_id
-                case "Trial Moderator":
-                    return tm_id
-                case "Moderator":
-                    return mod_id
-                case "Senior Moderator":
-                    return sm_id
-
-        roblox_username = roblox_username.strip()
-        roblox_id = getUserId(roblox_username)
-        if roblox_id == None:
-            await interaction.followup.send(f"No Roblox user `${roblox_username}` was found", ephemeral=True)
-            return
-        current_month = datetime.now().month
-        current_year = datetime.now().year
-
-        response = await robloxToDiscord(rover_token, server_id, roblox_id)
-        discord_id = response['discordUsers'][0]['user']['id']
-        user_rank = getRankInGroup(roblox_id)
-        fc_task_id = getId(roblox_username, correctRankId(user_rank))
-        if fc_task_id == None:
-            await interaction.followup.send(f"No task for user `${roblox_username}` was found", ephemeral=True)
-            return
-
-        class ObservationLayout(discord.ui.Container):
-            mediagallery = discord.ui.MediaGallery(discord.MediaGalleryItem("https://i.ibb.co/k2C3f4Lw/image.png"))
-            separator1 = discord.ui.Separator()
-            text1 = discord.ui.TextDisplay(f"# {determineEmoji()} {"An" if observation_type == "Information" else "A"} {"informational" if observation_type == "Information" else observation_type.lower()} observation was made for {roblox_username} (<@{discord_id}>)")
-            text2 = discord.ui.TextDisplay("\n".join(f"> {line}" for line in description.split("\n")))
-            author_text = discord.ui.TextDisplay(f"- <@{interaction.user.id}>")
-            if primary_evidence:
-                evidence_media = discord.ui.MediaGallery()
-                for evidence in evidences:
-                    if evidence:
-                        evidence_media.add_item(media=evidence)
-
-            separator2 = discord.ui.Separator()
-            dm_section = discord.ui.Section(ui.TextDisplay("Contact user"), accessory=discord.ui.Button(url=f"https://discord.com/users/{discord_id}", label="DMs"))
-            roblox_section = discord.ui.Section(ui.TextDisplay("User's ROBLOX profile"), accessory=discord.ui.Button(url=f"https://roblox.com/users/{roblox_id}/profile", label="ROBLOX"))
-            task_section = discord.ui.Section(ui.TextDisplay("User's Freedcamp task"), accessory=discord.ui.Button(url=f"https://freedcamp.com/view/{correctRankId(user_rank)}/tasks/panel/task/{fc_task_id}", label="Freedcamp task"))
-            text3 = discord.ui.TextDisplay(f"-# Observation counted towards quota: **{count_towards_quota}**")
-            preview_warning = discord.ui.TextDisplay("This is a preview. Verify all information before accepting changes.")
-            action_row = discord.ui.ActionRow()
-
-
-            @action_row.button(label="I've confirmed that the provided information is correct.", style=discord.ButtonStyle.success)
-            async def my_button(self, interaction, button):
-                try:
-                    await interaction.response.defer()
-                    comment = f"""
-                                <h2>
-                                    <span style="color: #{determineSpanColor()}">
-                                        <strong>{observation_type}</strong>
-                                    </span> 
-                                    - Logged by {interaction.user} ({interaction.user.id}) 
-                                    {f'<a href={self.evidence_media.items[0].media.url}>(provided proof)</a>' if self.evidence_media.items and self.evidence_media.items[0].media.url else ''}
-                                </h2>
-                                
-                                <blockquote>
-                                    {description.replace("\n", "<br>")}
-                                </blockquote>
-                                {f"<h3>This observation contains extra evidence found in observation-logging.</h3>" if evidence2 is not None else ""}
-                                """.strip()
-                    postComment(fc_task_id, comment, fc_api_key, correctRankId(user_rank))
-        
-                    self.remove_item(self.preview_warning)
-                    self.remove_item(self.action_row)
-                    __import__('pprint').pprint(count_towards_quota)
-                    if (observation_type != "Information") and count_towards_quota:
-                        conn = sqlite3.connect("data.db")
-                        c = conn.cursor()
-                        tableName = "o" + str(interaction.user.id) # bypassing sqlite not allowing numbers as table names
-                        c.execute(f"""CREATE TABLE IF NOT EXISTS {tableName}(
-                                short_date TEXT NOT NULL,
-                                timestamp TEXT NOT NULL
-                                ) 
-                              """)
-
-                        shortDate = str(current_month) + "." + str(current_year)
-                        unix_timestamp = str(int(time.time())) # horrible but works
-
-                        c.execute(f"INSERT INTO {tableName} (short_date, timestamp) VALUES (?, ?)", ("123", unix_timestamp))
-                        conn.commit()
-                        c.close()
-                        conn.close()
-                    else:
-                        pass
-                    logging_channel_parsed = interaction.client.get_channel(logging_channel_id)
-                    await logging_channel_parsed.send(view=self.view)
-                    await interaction.followup.send("Observation submitted, logging...", ephemeral=True)
-                except Exception as e:
-                    print(e)
-                    await interaction.channel.send(f"```{e}```")
-
-        my_view = discord.ui.LayoutView()
-        cont = ObservationLayout(accent_colour=determineEmbedColor())
-        my_view.add_item(cont)
-
-        await interaction.followup.send(view=my_view, ephemeral=True)
-
+    async def observe(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(self.ObserveModal(interaction.user.id))
     @app_commands.command(
         name='observation-stats',
         description='View the amount of observations made by a specific staff member'
