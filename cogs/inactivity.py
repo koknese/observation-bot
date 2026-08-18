@@ -58,7 +58,7 @@ def getRankInGroup(userid):
         request = requests.get(f"https://groups.roblox.com/v1/users/{userid}/groups/roles")
         response = json.loads(request.text)
         for i in response["data"]:
-            if i["group"]["id"] == 2568175:
+            if i["group"]["id"] == 640802959:
                 return i["role"]["name"]
     else:
         error = "User ID couldn't be found or user not in group."
