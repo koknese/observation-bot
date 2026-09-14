@@ -40,6 +40,16 @@ async def load_cog(interaction: discord.Interaction, extension: str):
         print(f"cog '{extension}' has been unloaded.")
     else:
         await interaction.response.send_message(f"not owner.")
+    
+@tree.command(name="reload", description="DEBUG: reload a cog", guild=discord.Object(id=server_id))
+async def load_cog(interaction: discord.Interaction, extension: str):
+    if interaction.user.id == 432437043956809738:
+        await bot.reload_extension(f"cogs.{extension}")
+        await interaction.response.send_message(f"cog '{extension}' reloaded.")
+        await tree.sync(guild=discord.object(id=server_id)) 
+        print(f"cog '{extension}' has been reloaded.")
+    else:
+        await interaction.response.send_message(f"not owner.")
 
 @tree.command(name="force-sync", description="DEBUG: forcesync", guild=discord.Object(id=server_id))
 async def forcesync(interaction: discord.Interaction):
@@ -54,29 +64,21 @@ async def forcesync(interaction: discord.Interaction):
 async def on_ready():
     print(f"We have logged in as {bot.user}")
 
-    await bot.load_extension("cogs.observe")
-    print("Obs cog loaded!")
-
-    await bot.load_extension("cogs.backup")
-    print("Backup cog loaded!")
-
-    await bot.load_extension("cogs.modassistance")
-    print("Mod assistance cog loaded!")
-
-    await bot.load_extension("cogs.reports")
-    print("Reports cog loaded!")
-
-    await bot.load_extension("cogs.staffwarn")
-    print("Staff warns cog loaded!")
-
-    await bot.load_extension("cogs.inactivity")
-    print("Inactivity cog loaded!")
-
-    await bot.load_extension("cogs.rolemanipulation")
-    print("Role manipulations cog loaded!")
-
-    await bot.load_extension("cogs.petition")
-    print("Petitions cog loaded!")
+    cogs = {
+        "cogs.observe": "Observations",
+        "cogs.backup": "Backup",
+        "cogs.modassistance": "Mod assistance",
+        "cogs.reports": "Reports",
+        # "cogs.staffwarn": "Staff warns", nophono uses this
+        "cogs.inactivity": "Inactivity",
+        # "cogs.rolemanipulation": "Role manipulations", broken
+        "cogs.petition": "Petitions",
+        "cogs.jarvis": "Jarvis",
+        "cogs.tickets": "Tickets"
+    }
+    for cog,name in cogs.items():
+        await bot.load_extension(cog)
+        __import__('pprint').pprint(f"{name} cog has been loaded")
         
     await tree.sync(guild=discord.Object(id=server_id))  # Sync the commands after loading the cog
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"/report for reports"))
