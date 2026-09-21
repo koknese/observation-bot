@@ -39,7 +39,8 @@ ranklist = {
         "Moderator": 20,
         "Senior Moderator": 30,
         "Retired Staff": 31,
-        "Respected Peer": 32
+        "Respected Peer": 32,
+        "Administrator": 40
 }
 class PromotionMessage(ui.LayoutView):
     def __init__(self, *, finalString:str, user: int, reason:str) -> None:

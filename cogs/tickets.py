@@ -38,6 +38,7 @@ gm_id = os.getenv('GM_ID')
 tm_id = os.getenv('TM_ID')
 
 observation_access = int(os.getenv('OBS_ROLE'))
+ha_role = int(os.getenv('HA_ROLE'))
 
 bot = commands.Bot(command_prefix="sudo ", intents=intents)
 tree = bot.tree
@@ -139,7 +140,7 @@ class ReportModal(discord.ui.Modal, title='Reporting a staff member'):
             super().__init__()
         images = discord.ui.Label(
                 text='Evidence',
-                description='Upload any evidence. IMAGES ONLY.',
+                description='Upload any evidence. INCLUDE CHAT LOGS.',
                 component=discord.ui.FileUpload(
                     max_values=10,
                     custom_id='evidence_imgs',
@@ -158,6 +159,20 @@ class ReportModal(discord.ui.Modal, title='Reporting a staff member'):
                 )
                 adminRole = await interaction.guild.fetch_role(observation_access)
                 inactiveAdmins = await interaction.guild.fetch_role(1194693804192706620)
+                hadmins = await interaction.guild.fetch_role(ha_role)
+
+                async def getRoleName(rank):
+                    for key, value in ranklist.items():
+                        if value == rank:
+                            return key
+                
+                target = self.user.value.strip()
+                rank = await getHighestRank(getUserId(target))
+                if rank <= 2 or not isinstance(rank, int) or not rank:
+                    await interaction.followup.send("User does not exist or is not above the EXP+ threshold!")
+                    return
+
+                role = await getRoleName(rank)
                 async def getRandomAdmin():
                     foundSuitableAdmin = False
                     while foundSuitableAdmin == False:
@@ -174,28 +189,23 @@ class ReportModal(discord.ui.Modal, title='Reporting a staff member'):
                 overwrites = {
                     interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
                     interaction.guild.me: talk,
-                    adminRole:talk,
+                    hadmins:talk,
                     interaction.user:talk
                 }
+
+                initmsg = ""
+                if rank != 40:
+                    overwrites.update({adminRole:talk})
+                    initmsg = f"<@{interaction.user.id}>, administrator <@{randomAdmin.id}> is assigned to your ticket."
+                else:
+                    initmsg = f"<@{interaction.user.id}>, <@&{ha_role}> "
+
                 def randomword(length):
                     letters = string.ascii_lowercase
                     return ''.join(random.choice(letters) for i in range(length))
                 embed = discord.Embed()
 
                 evidences = []
-                async def getRoleName(rank):
-                    for key, value in ranklist.items():
-                        if value == rank:
-                            return key
-                
-                target = self.user.value.strip()
-                rank = await getHighestRank(getUserId(target))
-                __import__('pprint').pprint(rank)
-                if rank <= 2 or not isinstance(rank, int) or not rank:
-                    await interaction.followup.send("User does not exist or is not above the EXP+ threshold!")
-                    return
-
-                role = await getRoleName(rank)
                 createdChannel = await interaction.guild.create_text_channel(f"report-{self.user.value.strip()}-{randomword(3)}", overwrites=overwrites, category=category, topic=f"{{ 'report': True, 'target':\"{self.user.value.strip()}\", 'targetRank':'{role}' }}")
 
                                 
@@ -212,7 +222,9 @@ class ReportModal(discord.ui.Modal, title='Reporting a staff member'):
                 embed.add_field(name="description",
                                 value=self.description.value,
                                 inline=False)
-                await createdChannel.send(f"<@{interaction.user.id}>, administrator <@{randomAdmin.id}> is assigned to your ticket.", embed=embed)
+
+
+                await createdChannel.send(initmsg, embed=embed)
                 await createdChannel.send(f"Provided evidence:\n {'\n'.join(evidences)}\n\nAdministrator, remember to run `/close-report` upon finishing the ticket!")
                 await interaction.followup.send(f'Your ticket has been created: <#{createdChannel.id}>', ephemeral=True)
             except IndexError:
@@ -263,7 +275,7 @@ class Tickets(commands.Cog):
     @discord.app_commands.checks.has_any_role("Administrator", "Head Administrator", "Director")
     async def closeReport(self, interaction:discord.Interaction, action_taken:str):
         category = discord.utils.get(interaction.guild.categories, id=1030362769108770876)
-        if interaction.channel.category == category:
+        if interaction.channel.category == category and (interaction.channel.name.startswith("question") or interaction.channel.name.startswith("report")):
             __import__('pprint').pprint(interaction.channel.topic)
             smartTopic = literal_eval(interaction.channel.topic)
             __import__('pprint').pprint(smartTopic)
@@ -289,12 +301,14 @@ class Tickets(commands.Cog):
             if smartTopic["report"]:
                 message = await logging.send(f"{interaction.user} has closed a report.\n**Target:**{smartTopic['target']} ({smartTopic["targetRank"]})\n**Reason:** `{action_taken}`", file=transcript_file)
             else:
-                message = await logging.send(f"{interaction.user} has closed an admin question.\nReason: `{reason}`", file=transcript_file)
-            await message.forward(loggingPublic)
+                message = await logging.send(f"{interaction.user} has closed an admin question.\nReason: `{action_taken}`", file=transcript_file)
+                if smartTopic["targetRank"] != "Administrator":
+                    await message.forward(loggingPublic)
+
             await interaction.channel.delete(reason="Closed")
 
         else:
-            await interaction.response.send_message("Not a mod-assistance ticket", ephemeral=True)
+            await interaction.response.send_message("Not a ticket", ephemeral=True)
 
 
 async def setup(bot: commands.Bot):
